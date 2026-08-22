@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { detectRecurring, parseCsv } from "@/lib/importDetect";
+import { extractFromText } from "@/lib/ocrExtract";
 import type { ImportSuggestion } from "@/lib/importTypes";
 import { findService } from "@/lib/catalog";
 import { ServiceLogo } from "./ServiceLogo";
@@ -14,6 +15,7 @@ export function ImportFlow({
   const [suggestions, setSuggestions] = useState<ImportSuggestion[] | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const shotInput = useRef<HTMLInputElement>(null);
   const csvInput = useRef<HTMLInputElement>(null);
@@ -31,23 +33,36 @@ export function ImportFlow({
   async function handleScreenshots(files: FileList) {
     setBusy(true);
     setError(null);
+    setProgress("Loading OCR engine…");
     try {
-      const form = new FormData();
-      [...files].slice(0, 4).forEach((f) => form.append("files", f));
-      const res = await fetch("/api/import/screenshot", {
-        method: "POST",
-        body: form,
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error ?? "Import failed.");
-        return;
+      // OCR runs entirely in the browser (WASM) — screenshots never upload.
+      const { createWorker } = await import("tesseract.js");
+      const worker = await createWorker("eng");
+      try {
+        const all: ImportSuggestion[] = [];
+        const list = [...files].slice(0, 6);
+        for (let i = 0; i < list.length; i++) {
+          setProgress(`Reading image ${i + 1} of ${list.length}…`);
+          const { data } = await worker.recognize(list[i]);
+          all.push(...extractFromText(data.text));
+        }
+        // Dedupe across images by catalog id / name
+        const seen = new Map<string, ImportSuggestion>();
+        for (const s of all) {
+          const key = s.catalog_id ?? s.name.toLowerCase();
+          if (!seen.has(key)) seen.set(key, s);
+        }
+        showSuggestions([...seen.values()]);
+      } finally {
+        await worker.terminate();
       }
-      showSuggestions(data.suggestions ?? []);
     } catch {
-      setError("Upload failed — check your connection and try again.");
+      setError(
+        "Couldn't read those images — try sharper screenshots (crop to the list if you can)."
+      );
     } finally {
       setBusy(false);
+      setProgress(null);
     }
   }
 
@@ -164,20 +179,18 @@ export function ImportFlow({
       </p>
 
       <div className="card" style={{ marginBottom: "1rem" }}>
-        <h2 style={{ marginTop: 0, fontSize: "1rem" }}>
-          📸 Screenshot or PDF
-        </h2>
+        <h2 style={{ marginTop: 0, fontSize: "1rem" }}>📸 Screenshots</h2>
         <p className="muted" style={{ lineHeight: 1.6 }}>
-          Screenshot the places your subscriptions are listed and upload them
-          (up to 4 at once): iPhone <b>Settings → your name → Subscriptions</b>,
-          Google Play <b>Payments &amp; subscriptions</b>, your bank app&apos;s{" "}
-          <b>Direct Debits</b>, PayPal <b>Automatic payments</b>, or a bank
-          statement PDF. Files are processed once and not stored.
+          Screenshot the places your subscriptions are listed (up to 6 at
+          once): iPhone <b>Settings → your name → Subscriptions</b>, Google
+          Play <b>Payments &amp; subscriptions</b>, your bank app&apos;s{" "}
+          <b>Direct Debits</b>, or PayPal <b>Automatic payments</b>. Reading
+          happens on your device — the images never leave your browser.
         </p>
         <input
           ref={shotInput}
           type="file"
-          accept="image/*,application/pdf"
+          accept="image/*"
           multiple
           hidden
           onChange={(e) => e.target.files?.length && handleScreenshots(e.target.files)}
@@ -187,7 +200,7 @@ export function ImportFlow({
           disabled={busy}
           onClick={() => shotInput.current?.click()}
         >
-          {busy ? "Reading…" : "Upload screenshots"}
+          {busy ? (progress ?? "Reading…") : "Choose screenshots"}
         </button>
       </div>
 

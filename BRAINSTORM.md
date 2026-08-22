@@ -193,10 +193,12 @@ real options, dead ends, and no-OAuth moves that beat most OAuth:
 
 - **Screenshot import (V1.5, best effort-to-value).** The guided audit already sends
   people to the iOS Subscriptions page / bank direct-debit list / PayPal automatic
-  payments — add "screenshot it and upload": an LLM extracts services, amounts, and
-  dates, matches them against the catalog, and pre-fills a confirm list. No
-  credentials, no compliance regime, process-and-discard privacy, pennies per
-  import. Works on bank-statement PDFs too.
+  payments — add "screenshot it": on-device OCR (Tesseract WASM in the browser) plus
+  catalog-aware heuristics extract services, amounts, and dates and pre-fill a
+  confirm list. Decision: **no LLM dependency** — the app must work without any paid
+  API subscription, and on-device keeps the images fully private. LLM extraction
+  could return later as an optional quality upgrade behind a paid tier, never as a
+  requirement.
 - **Email auto-forwarding.** Per-user inbound address + a one-time Gmail filter
   ("billing/receipt → forward") gives *ongoing* detection of new subscriptions with
   zero Google verification. Resend supports inbound parsing.
