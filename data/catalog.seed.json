@@ -3,115 +3,1114 @@
   "version": 1,
   "currency": "GBP",
   "services": [
-    { "id": "netflix", "name": "Netflix", "category": "streaming", "domain": "netflix.com", "default_cycle": "monthly", "notice_period_days": 0, "cancel_method": "website",
+    {
+      "id": "netflix",
+      "name": "Netflix",
+      "category": "streaming",
+      "domain": "netflix.com",
+      "default_cycle": "monthly",
+      "notice_period_days": 0,
+      "cancel_method": "website",
       "plans": [
-        { "label": "Standard with ads", "typical_price": 5.99, "screens": 2 },
-        { "label": "Standard", "typical_price": 12.99, "screens": 2 },
-        { "label": "Premium", "typical_price": 18.99, "screens": 4 }
-      ] },
-    { "id": "disney-plus", "name": "Disney+", "category": "streaming", "domain": "disneyplus.com", "default_cycle": "monthly", "notice_period_days": 0, "cancel_method": "website",
+        {
+          "label": "Standard with ads",
+          "typical_price": 5.99,
+          "screens": 2
+        },
+        {
+          "label": "Standard",
+          "typical_price": 12.99,
+          "screens": 2
+        },
+        {
+          "label": "Premium",
+          "typical_price": 18.99,
+          "screens": 4
+        }
+      ]
+    },
+    {
+      "id": "disney-plus",
+      "name": "Disney+",
+      "category": "streaming",
+      "domain": "disneyplus.com",
+      "default_cycle": "monthly",
+      "notice_period_days": 0,
+      "cancel_method": "website",
       "plans": [
-        { "label": "Standard with ads", "typical_price": 4.99 },
-        { "label": "Standard", "typical_price": 8.99 },
-        { "label": "Premium", "typical_price": 12.99 }
-      ] },
-    { "id": "amazon-prime", "name": "Amazon Prime", "category": "streaming", "domain": "amazon.co.uk", "default_cycle": "monthly", "notice_period_days": 0, "cancel_method": "website",
+        {
+          "label": "Standard with ads",
+          "typical_price": 4.99
+        },
+        {
+          "label": "Standard",
+          "typical_price": 8.99
+        },
+        {
+          "label": "Premium",
+          "typical_price": 12.99
+        }
+      ]
+    },
+    {
+      "id": "amazon-prime",
+      "name": "Amazon Prime",
+      "category": "streaming",
+      "domain": "amazon.co.uk",
+      "default_cycle": "monthly",
+      "notice_period_days": 0,
+      "cancel_method": "website",
       "plans": [
-        { "label": "Monthly", "typical_price": 8.99, "cycle": "monthly" },
-        { "label": "Annual", "typical_price": 95.0, "cycle": "yearly" }
-      ] },
-    { "id": "now-tv", "name": "NOW (Now TV)", "category": "streaming", "domain": "nowtv.com", "default_cycle": "monthly", "notice_period_days": 0, "cancel_method": "website",
+        {
+          "label": "Monthly",
+          "typical_price": 8.99,
+          "cycle": "monthly"
+        },
+        {
+          "label": "Annual",
+          "typical_price": 95.0,
+          "cycle": "yearly"
+        }
+      ]
+    },
+    {
+      "id": "now-tv",
+      "name": "NOW (Now TV)",
+      "category": "streaming",
+      "domain": "nowtv.com",
+      "default_cycle": "monthly",
+      "notice_period_days": 0,
+      "cancel_method": "website",
       "plans": [
-        { "label": "Entertainment", "typical_price": 9.99 },
-        { "label": "Cinema", "typical_price": 9.99 },
-        { "label": "Sports", "typical_price": 34.99 }
+        {
+          "label": "Entertainment",
+          "typical_price": 9.99
+        },
+        {
+          "label": "Cinema",
+          "typical_price": 9.99
+        },
+        {
+          "label": "Sports",
+          "typical_price": 34.99
+        }
       ],
-      "notes": "Frequent intro offers; classic take-for-a-month service" },
-    { "id": "apple-tv-plus", "name": "Apple TV+", "category": "streaming", "domain": "apple.com", "default_cycle": "monthly", "typical_price": 8.99, "notice_period_days": 0, "cancel_method": "in_app" },
-    { "id": "youtube-premium", "name": "YouTube Premium", "category": "streaming", "domain": "youtube.com", "default_cycle": "monthly", "typical_price": 12.99, "notice_period_days": 0, "cancel_method": "in_app" },
-    { "id": "paramount-plus", "name": "Paramount+", "category": "streaming", "domain": "paramountplus.com", "default_cycle": "monthly", "typical_price": 7.99, "notice_period_days": 0, "cancel_method": "website" },
-
-    { "id": "spotify", "name": "Spotify", "category": "music", "domain": "spotify.com", "default_cycle": "monthly", "notice_period_days": 0, "cancel_method": "website",
+      "notes": "Frequent intro offers; classic take-for-a-month service"
+    },
+    {
+      "id": "apple-tv-plus",
+      "name": "Apple TV+",
+      "category": "streaming",
+      "domain": "apple.com",
+      "default_cycle": "monthly",
+      "typical_price": 8.99,
+      "notice_period_days": 0,
+      "cancel_method": "in_app"
+    },
+    {
+      "id": "youtube-premium",
+      "name": "YouTube Premium",
+      "category": "streaming",
+      "domain": "youtube.com",
+      "default_cycle": "monthly",
+      "typical_price": 12.99,
+      "notice_period_days": 0,
+      "cancel_method": "in_app"
+    },
+    {
+      "id": "paramount-plus",
+      "name": "Paramount+",
+      "category": "streaming",
+      "domain": "paramountplus.com",
+      "default_cycle": "monthly",
+      "typical_price": 7.99,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "spotify",
+      "name": "Spotify",
+      "category": "music",
+      "domain": "spotify.com",
+      "default_cycle": "monthly",
+      "notice_period_days": 0,
+      "cancel_method": "website",
       "plans": [
-        { "label": "Individual", "typical_price": 11.99 },
-        { "label": "Duo", "typical_price": 16.99 },
-        { "label": "Family", "typical_price": 19.99, "seats": 6 }
-      ] },
-    { "id": "apple-music", "name": "Apple Music", "category": "music", "domain": "apple.com", "default_cycle": "monthly", "typical_price": 10.99, "notice_period_days": 0, "cancel_method": "in_app" },
-    { "id": "apple-one", "name": "Apple One", "category": "bundle", "domain": "apple.com", "default_cycle": "monthly", "notice_period_days": 0, "cancel_method": "in_app",
+        {
+          "label": "Individual",
+          "typical_price": 11.99
+        },
+        {
+          "label": "Duo",
+          "typical_price": 16.99
+        },
+        {
+          "label": "Family",
+          "typical_price": 19.99,
+          "seats": 6
+        }
+      ]
+    },
+    {
+      "id": "apple-music",
+      "name": "Apple Music",
+      "category": "music",
+      "domain": "apple.com",
+      "default_cycle": "monthly",
+      "typical_price": 10.99,
+      "notice_period_days": 0,
+      "cancel_method": "in_app"
+    },
+    {
+      "id": "apple-one",
+      "name": "Apple One",
+      "category": "bundle",
+      "domain": "apple.com",
+      "default_cycle": "monthly",
+      "notice_period_days": 0,
+      "cancel_method": "in_app",
       "plans": [
-        { "label": "Individual", "typical_price": 18.95 },
-        { "label": "Family", "typical_price": 24.95, "seats": 6 }
+        {
+          "label": "Individual",
+          "typical_price": 18.95
+        },
+        {
+          "label": "Family",
+          "typical_price": 24.95,
+          "seats": 6
+        }
       ],
-      "bundles": ["apple-music", "apple-tv-plus", "icloud-plus"] },
-    { "id": "audible", "name": "Audible", "category": "books", "domain": "audible.co.uk", "default_cycle": "monthly", "typical_price": 7.99, "notice_period_days": 0, "cancel_method": "website", "notes": "Supports pausing membership" },
-
-    { "id": "nyt", "name": "The New York Times", "category": "news", "domain": "nytimes.com", "default_cycle": "monthly", "typical_price": 8.0, "notice_period_days": 0, "cancel_method": "varies", "notes": "Intro offers that jump in price; cancellation historically required chat/phone in some regions" },
-    { "id": "the-times", "name": "The Times", "category": "news", "domain": "thetimes.com", "default_cycle": "monthly", "typical_price": 26.0, "notice_period_days": 30, "cancel_method": "phone" },
-    { "id": "guardian", "name": "The Guardian", "category": "news", "domain": "theguardian.com", "default_cycle": "monthly", "typical_price": 12.0, "notice_period_days": 0, "cancel_method": "website" },
-    { "id": "economist", "name": "The Economist", "category": "news", "domain": "economist.com", "default_cycle": "quarterly", "typical_price": 99.0, "notice_period_days": 0, "cancel_method": "website" },
-
-    { "id": "xbox-game-pass", "name": "Xbox Game Pass", "category": "gaming", "domain": "xbox.com", "default_cycle": "monthly", "notice_period_days": 0, "cancel_method": "website",
+      "bundles": [
+        "apple-music",
+        "apple-tv-plus",
+        "icloud-plus"
+      ]
+    },
+    {
+      "id": "audible",
+      "name": "Audible",
+      "category": "books",
+      "domain": "audible.co.uk",
+      "default_cycle": "monthly",
+      "typical_price": 7.99,
+      "notice_period_days": 0,
+      "cancel_method": "website",
+      "notes": "Supports pausing membership"
+    },
+    {
+      "id": "nyt",
+      "name": "The New York Times",
+      "category": "news",
+      "domain": "nytimes.com",
+      "default_cycle": "monthly",
+      "typical_price": 8.0,
+      "notice_period_days": 0,
+      "cancel_method": "varies",
+      "notes": "Intro offers that jump in price; cancellation historically required chat/phone in some regions"
+    },
+    {
+      "id": "the-times",
+      "name": "The Times",
+      "category": "news",
+      "domain": "thetimes.com",
+      "default_cycle": "monthly",
+      "typical_price": 26.0,
+      "notice_period_days": 30,
+      "cancel_method": "phone"
+    },
+    {
+      "id": "guardian",
+      "name": "The Guardian",
+      "category": "news",
+      "domain": "theguardian.com",
+      "default_cycle": "monthly",
+      "typical_price": 12.0,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "economist",
+      "name": "The Economist",
+      "category": "news",
+      "domain": "economist.com",
+      "default_cycle": "quarterly",
+      "typical_price": 99.0,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "xbox-game-pass",
+      "name": "Xbox Game Pass",
+      "category": "gaming",
+      "domain": "xbox.com",
+      "default_cycle": "monthly",
+      "notice_period_days": 0,
+      "cancel_method": "website",
       "plans": [
-        { "label": "Core", "typical_price": 6.99 },
-        { "label": "Standard", "typical_price": 10.99 },
-        { "label": "Ultimate", "typical_price": 14.99 }
-      ] },
-    { "id": "ps-plus", "name": "PlayStation Plus", "category": "gaming", "domain": "playstation.com", "default_cycle": "monthly", "notice_period_days": 0, "cancel_method": "in_app",
+        {
+          "label": "Core",
+          "typical_price": 6.99
+        },
+        {
+          "label": "Standard",
+          "typical_price": 10.99
+        },
+        {
+          "label": "Ultimate",
+          "typical_price": 14.99
+        }
+      ]
+    },
+    {
+      "id": "ps-plus",
+      "name": "PlayStation Plus",
+      "category": "gaming",
+      "domain": "playstation.com",
+      "default_cycle": "monthly",
+      "notice_period_days": 0,
+      "cancel_method": "in_app",
       "plans": [
-        { "label": "Essential", "typical_price": 6.99 },
-        { "label": "Extra", "typical_price": 10.99 },
-        { "label": "Premium", "typical_price": 13.49 }
-      ] },
-    { "id": "nintendo-online", "name": "Nintendo Switch Online", "category": "gaming", "domain": "nintendo.co.uk", "default_cycle": "yearly", "typical_price": 17.99, "notice_period_days": 0, "cancel_method": "in_app" },
-
-    { "id": "puregym", "name": "PureGym", "category": "gym", "domain": "puregym.com", "default_cycle": "monthly", "typical_price": 24.99, "notice_period_days": 0, "cancel_method": "website", "notes": "No contract on standard plans; cancel by stopping direct debit per their process" },
-    { "id": "the-gym-group", "name": "The Gym Group", "category": "gym", "domain": "thegymgroup.com", "default_cycle": "monthly", "typical_price": 22.99, "notice_period_days": 0, "cancel_method": "website" },
-    { "id": "david-lloyd", "name": "David Lloyd", "category": "gym", "domain": "davidlloyd.co.uk", "default_cycle": "monthly", "typical_price": 100.0, "notice_period_days": 90, "cancel_method": "letter", "typical_min_term_months": 12, "notes": "Long notice period; often requires written notice" },
-    { "id": "nuffield-health", "name": "Nuffield Health", "category": "gym", "domain": "nuffieldhealth.com", "default_cycle": "monthly", "typical_price": 75.0, "notice_period_days": 30, "cancel_method": "letter", "typical_min_term_months": 12 },
-    { "id": "gym-generic", "name": "Gym membership (other)", "category": "gym", "default_cycle": "monthly", "typical_price": 35.0, "notice_period_days": 30, "cancel_method": "varies" },
-
-    { "id": "bt-broadband", "name": "BT Broadband", "category": "broadband", "domain": "bt.com", "default_cycle": "monthly", "typical_price": 32.0, "notice_period_days": 30, "cancel_method": "phone", "typical_min_term_months": 24, "notes": "Price typically jumps at contract end — renegotiation reminder is the value" },
-    { "id": "sky-broadband", "name": "Sky Broadband", "category": "broadband", "domain": "sky.com", "default_cycle": "monthly", "typical_price": 30.0, "notice_period_days": 31, "cancel_method": "phone", "typical_min_term_months": 18 },
-    { "id": "virgin-media", "name": "Virgin Media", "category": "broadband", "domain": "virginmedia.com", "default_cycle": "monthly", "typical_price": 35.0, "notice_period_days": 30, "cancel_method": "phone", "typical_min_term_months": 18 },
-    { "id": "broadband-generic", "name": "Broadband (other)", "category": "broadband", "default_cycle": "monthly", "typical_price": 30.0, "notice_period_days": 30, "cancel_method": "phone", "typical_min_term_months": 18 },
-
-    { "id": "ee-mobile", "name": "EE Mobile", "category": "mobile", "domain": "ee.co.uk", "default_cycle": "monthly", "typical_price": 25.0, "notice_period_days": 30, "cancel_method": "phone", "typical_min_term_months": 24 },
-    { "id": "o2-mobile", "name": "O2 Mobile", "category": "mobile", "domain": "o2.co.uk", "default_cycle": "monthly", "typical_price": 25.0, "notice_period_days": 30, "cancel_method": "phone", "typical_min_term_months": 24 },
-    { "id": "three-mobile", "name": "Three Mobile", "category": "mobile", "domain": "three.co.uk", "default_cycle": "monthly", "typical_price": 20.0, "notice_period_days": 30, "cancel_method": "phone", "typical_min_term_months": 24 },
-    { "id": "vodafone-mobile", "name": "Vodafone Mobile", "category": "mobile", "domain": "vodafone.co.uk", "default_cycle": "monthly", "typical_price": 25.0, "notice_period_days": 30, "cancel_method": "phone", "typical_min_term_months": 24 },
-    { "id": "mobile-generic", "name": "Mobile / SIM (other)", "category": "mobile", "default_cycle": "monthly", "typical_price": 15.0, "notice_period_days": 30, "cancel_method": "varies" },
-
-    { "id": "tv-licence", "name": "TV Licence", "category": "utilities", "domain": "tvlicensing.co.uk", "default_cycle": "yearly", "typical_price": 169.5, "notice_period_days": 0, "cancel_method": "website" },
-    { "id": "energy-generic", "name": "Energy (gas/electric)", "category": "utilities", "default_cycle": "monthly", "typical_price": 140.0, "notice_period_days": 0, "cancel_method": "website", "notes": "Fixed tariffs have an end date worth a renegotiation reminder" },
-    { "id": "council-tax", "name": "Council Tax", "category": "utilities", "default_cycle": "monthly", "typical_price": 160.0, "notice_period_days": 0, "cancel_method": "website", "notes": "Usually 10 payments/year — supports custom schedules" },
-
-    { "id": "icloud-plus", "name": "iCloud+", "category": "storage", "domain": "icloud.com", "default_cycle": "monthly",
+        {
+          "label": "Essential",
+          "typical_price": 6.99
+        },
+        {
+          "label": "Extra",
+          "typical_price": 10.99
+        },
+        {
+          "label": "Premium",
+          "typical_price": 13.49
+        }
+      ]
+    },
+    {
+      "id": "nintendo-online",
+      "name": "Nintendo Switch Online",
+      "category": "gaming",
+      "domain": "nintendo.co.uk",
+      "default_cycle": "yearly",
+      "typical_price": 17.99,
+      "notice_period_days": 0,
+      "cancel_method": "in_app"
+    },
+    {
+      "id": "puregym",
+      "name": "PureGym",
+      "category": "gym",
+      "domain": "puregym.com",
+      "default_cycle": "monthly",
+      "typical_price": 24.99,
+      "notice_period_days": 0,
+      "cancel_method": "website",
+      "notes": "No contract on standard plans; cancel by stopping direct debit per their process"
+    },
+    {
+      "id": "the-gym-group",
+      "name": "The Gym Group",
+      "category": "gym",
+      "domain": "thegymgroup.com",
+      "default_cycle": "monthly",
+      "typical_price": 22.99,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "david-lloyd",
+      "name": "David Lloyd",
+      "category": "gym",
+      "domain": "davidlloyd.co.uk",
+      "default_cycle": "monthly",
+      "typical_price": 100.0,
+      "notice_period_days": 90,
+      "cancel_method": "letter",
+      "typical_min_term_months": 12,
+      "notes": "Long notice period; often requires written notice"
+    },
+    {
+      "id": "nuffield-health",
+      "name": "Nuffield Health",
+      "category": "gym",
+      "domain": "nuffieldhealth.com",
+      "default_cycle": "monthly",
+      "typical_price": 75.0,
+      "notice_period_days": 30,
+      "cancel_method": "letter",
+      "typical_min_term_months": 12
+    },
+    {
+      "id": "gym-generic",
+      "name": "Gym membership (other)",
+      "category": "gym",
+      "default_cycle": "monthly",
+      "typical_price": 35.0,
+      "notice_period_days": 30,
+      "cancel_method": "varies"
+    },
+    {
+      "id": "bt-broadband",
+      "name": "BT Broadband",
+      "category": "broadband",
+      "domain": "bt.com",
+      "default_cycle": "monthly",
+      "typical_price": 32.0,
+      "notice_period_days": 30,
+      "cancel_method": "phone",
+      "typical_min_term_months": 24,
+      "notes": "Price typically jumps at contract end — renegotiation reminder is the value"
+    },
+    {
+      "id": "sky-broadband",
+      "name": "Sky Broadband",
+      "category": "broadband",
+      "domain": "sky.com",
+      "default_cycle": "monthly",
+      "typical_price": 30.0,
+      "notice_period_days": 31,
+      "cancel_method": "phone",
+      "typical_min_term_months": 18
+    },
+    {
+      "id": "virgin-media",
+      "name": "Virgin Media",
+      "category": "broadband",
+      "domain": "virginmedia.com",
+      "default_cycle": "monthly",
+      "typical_price": 35.0,
+      "notice_period_days": 30,
+      "cancel_method": "phone",
+      "typical_min_term_months": 18
+    },
+    {
+      "id": "broadband-generic",
+      "name": "Broadband (other)",
+      "category": "broadband",
+      "default_cycle": "monthly",
+      "typical_price": 30.0,
+      "notice_period_days": 30,
+      "cancel_method": "phone",
+      "typical_min_term_months": 18
+    },
+    {
+      "id": "ee-mobile",
+      "name": "EE Mobile",
+      "category": "mobile",
+      "domain": "ee.co.uk",
+      "default_cycle": "monthly",
+      "typical_price": 25.0,
+      "notice_period_days": 30,
+      "cancel_method": "phone",
+      "typical_min_term_months": 24
+    },
+    {
+      "id": "o2-mobile",
+      "name": "O2 Mobile",
+      "category": "mobile",
+      "domain": "o2.co.uk",
+      "default_cycle": "monthly",
+      "typical_price": 25.0,
+      "notice_period_days": 30,
+      "cancel_method": "phone",
+      "typical_min_term_months": 24
+    },
+    {
+      "id": "three-mobile",
+      "name": "Three Mobile",
+      "category": "mobile",
+      "domain": "three.co.uk",
+      "default_cycle": "monthly",
+      "typical_price": 20.0,
+      "notice_period_days": 30,
+      "cancel_method": "phone",
+      "typical_min_term_months": 24
+    },
+    {
+      "id": "vodafone-mobile",
+      "name": "Vodafone Mobile",
+      "category": "mobile",
+      "domain": "vodafone.co.uk",
+      "default_cycle": "monthly",
+      "typical_price": 25.0,
+      "notice_period_days": 30,
+      "cancel_method": "phone",
+      "typical_min_term_months": 24
+    },
+    {
+      "id": "mobile-generic",
+      "name": "Mobile / SIM (other)",
+      "category": "mobile",
+      "default_cycle": "monthly",
+      "typical_price": 15.0,
+      "notice_period_days": 30,
+      "cancel_method": "varies"
+    },
+    {
+      "id": "tv-licence",
+      "name": "TV Licence",
+      "category": "utilities",
+      "domain": "tvlicensing.co.uk",
+      "default_cycle": "yearly",
+      "typical_price": 169.5,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "energy-generic",
+      "name": "Energy (gas/electric)",
+      "category": "utilities",
+      "default_cycle": "monthly",
+      "typical_price": 140.0,
+      "notice_period_days": 0,
+      "cancel_method": "website",
+      "notes": "Fixed tariffs have an end date worth a renegotiation reminder"
+    },
+    {
+      "id": "council-tax",
+      "name": "Council Tax",
+      "category": "utilities",
+      "default_cycle": "monthly",
+      "typical_price": 160.0,
+      "notice_period_days": 0,
+      "cancel_method": "website",
+      "notes": "Usually 10 payments/year — supports custom schedules"
+    },
+    {
+      "id": "icloud-plus",
+      "name": "iCloud+",
+      "category": "storage",
+      "domain": "icloud.com",
+      "default_cycle": "monthly",
       "plans": [
-        { "label": "50GB", "typical_price": 0.99 },
-        { "label": "200GB", "typical_price": 2.99 },
-        { "label": "2TB", "typical_price": 8.99 }
-      ], "notice_period_days": 0, "cancel_method": "in_app" },
-    { "id": "google-one", "name": "Google One", "category": "storage", "domain": "one.google.com", "default_cycle": "monthly",
+        {
+          "label": "50GB",
+          "typical_price": 0.99
+        },
+        {
+          "label": "200GB",
+          "typical_price": 2.99
+        },
+        {
+          "label": "2TB",
+          "typical_price": 8.99
+        }
+      ],
+      "notice_period_days": 0,
+      "cancel_method": "in_app"
+    },
+    {
+      "id": "google-one",
+      "name": "Google One",
+      "category": "storage",
+      "domain": "one.google.com",
+      "default_cycle": "monthly",
       "plans": [
-        { "label": "100GB", "typical_price": 1.59 },
-        { "label": "200GB", "typical_price": 2.49 },
-        { "label": "2TB", "typical_price": 7.99 }
-      ], "notice_period_days": 0, "cancel_method": "website" },
-    { "id": "dropbox", "name": "Dropbox", "category": "storage", "domain": "dropbox.com", "default_cycle": "monthly", "typical_price": 9.99, "notice_period_days": 0, "cancel_method": "website" },
-
-    { "id": "microsoft-365", "name": "Microsoft 365", "category": "software", "domain": "microsoft.com", "default_cycle": "yearly",
+        {
+          "label": "100GB",
+          "typical_price": 1.59
+        },
+        {
+          "label": "200GB",
+          "typical_price": 2.49
+        },
+        {
+          "label": "2TB",
+          "typical_price": 7.99
+        }
+      ],
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "dropbox",
+      "name": "Dropbox",
+      "category": "storage",
+      "domain": "dropbox.com",
+      "default_cycle": "monthly",
+      "typical_price": 9.99,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "microsoft-365",
+      "name": "Microsoft 365",
+      "category": "software",
+      "domain": "microsoft.com",
+      "default_cycle": "yearly",
       "plans": [
-        { "label": "Personal", "typical_price": 84.99 },
-        { "label": "Family", "typical_price": 104.99, "seats": 6 }
-      ], "notice_period_days": 0, "cancel_method": "website" },
-    { "id": "adobe-cc", "name": "Adobe Creative Cloud", "category": "software", "domain": "adobe.com", "default_cycle": "monthly", "typical_price": 56.98, "notice_period_days": 0, "cancel_method": "website", "notes": "Annual-paid-monthly plans carry an early-termination fee — contract_end matters" },
-    { "id": "chatgpt-plus", "name": "ChatGPT Plus", "category": "software", "domain": "openai.com", "default_cycle": "monthly", "typical_price": 20.0, "notice_period_days": 0, "cancel_method": "website" },
-    { "id": "claude-pro", "name": "Claude Pro", "category": "software", "domain": "claude.ai", "default_cycle": "monthly", "typical_price": 18.0, "notice_period_days": 0, "cancel_method": "website" },
-
-    { "id": "amazon-music", "name": "Amazon Music Unlimited", "category": "music", "domain": "amazon.co.uk", "default_cycle": "monthly", "typical_price": 10.99, "notice_period_days": 0, "cancel_method": "website" },
-    { "id": "deliveroo-plus", "name": "Deliveroo Plus", "category": "food", "domain": "deliveroo.co.uk", "default_cycle": "monthly", "typical_price": 3.49, "notice_period_days": 0, "cancel_method": "in_app" },
-    { "id": "hellofresh", "name": "HelloFresh", "category": "food", "domain": "hellofresh.co.uk", "default_cycle": "weekly", "typical_price": 40.0, "notice_period_days": 0, "cancel_method": "website", "notes": "Weekly cycle; heavy intro-discount-then-cancel pattern" },
-    { "id": "insurance-generic", "name": "Insurance (car/home/pet)", "category": "insurance", "default_cycle": "yearly", "typical_price": 400.0, "notice_period_days": 0, "cancel_method": "varies", "notes": "Auto-renewal usually beatable by switching — renewal heads-up should fire ~3 weeks early" }
+        {
+          "label": "Personal",
+          "typical_price": 84.99
+        },
+        {
+          "label": "Family",
+          "typical_price": 104.99,
+          "seats": 6
+        }
+      ],
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "adobe-cc",
+      "name": "Adobe Creative Cloud",
+      "category": "software",
+      "domain": "adobe.com",
+      "default_cycle": "monthly",
+      "typical_price": 56.98,
+      "notice_period_days": 0,
+      "cancel_method": "website",
+      "notes": "Annual-paid-monthly plans carry an early-termination fee — contract_end matters"
+    },
+    {
+      "id": "chatgpt-plus",
+      "name": "ChatGPT Plus",
+      "category": "software",
+      "domain": "openai.com",
+      "default_cycle": "monthly",
+      "typical_price": 20.0,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "claude-pro",
+      "name": "Claude Pro",
+      "category": "software",
+      "domain": "claude.ai",
+      "default_cycle": "monthly",
+      "typical_price": 18.0,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "amazon-music",
+      "name": "Amazon Music Unlimited",
+      "category": "music",
+      "domain": "amazon.co.uk",
+      "default_cycle": "monthly",
+      "typical_price": 10.99,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "deliveroo-plus",
+      "name": "Deliveroo Plus",
+      "category": "food",
+      "domain": "deliveroo.co.uk",
+      "default_cycle": "monthly",
+      "typical_price": 3.49,
+      "notice_period_days": 0,
+      "cancel_method": "in_app"
+    },
+    {
+      "id": "hellofresh",
+      "name": "HelloFresh",
+      "category": "food",
+      "domain": "hellofresh.co.uk",
+      "default_cycle": "weekly",
+      "typical_price": 40.0,
+      "notice_period_days": 0,
+      "cancel_method": "website",
+      "notes": "Weekly cycle; heavy intro-discount-then-cancel pattern"
+    },
+    {
+      "id": "insurance-generic",
+      "name": "Insurance (car/home/pet)",
+      "category": "insurance",
+      "default_cycle": "yearly",
+      "typical_price": 400.0,
+      "notice_period_days": 0,
+      "cancel_method": "varies",
+      "notes": "Auto-renewal usually beatable by switching — renewal heads-up should fire ~3 weeks early"
+    },
+    {
+      "id": "sky-tv",
+      "name": "Sky TV (Stream/Glass)",
+      "category": "streaming",
+      "domain": "sky.com",
+      "default_cycle": "monthly",
+      "typical_price": 31.0,
+      "notice_period_days": 31,
+      "cancel_method": "phone",
+      "typical_min_term_months": 18
+    },
+    {
+      "id": "itvx-premium",
+      "name": "ITVX Premium",
+      "category": "streaming",
+      "domain": "itv.com",
+      "default_cycle": "monthly",
+      "typical_price": 5.99,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "discovery-plus",
+      "name": "Discovery+",
+      "category": "streaming",
+      "domain": "discoveryplus.com",
+      "default_cycle": "monthly",
+      "notice_period_days": 0,
+      "cancel_method": "website",
+      "plans": [
+        {
+          "label": "Standard with ads",
+          "typical_price": 3.99
+        },
+        {
+          "label": "Standard",
+          "typical_price": 6.99
+        },
+        {
+          "label": "Premium (TNT Sports)",
+          "typical_price": 30.99
+        }
+      ]
+    },
+    {
+      "id": "crunchyroll",
+      "name": "Crunchyroll",
+      "category": "streaming",
+      "domain": "crunchyroll.com",
+      "default_cycle": "monthly",
+      "notice_period_days": 0,
+      "cancel_method": "website",
+      "plans": [
+        {
+          "label": "Fan",
+          "typical_price": 4.99
+        },
+        {
+          "label": "Mega Fan",
+          "typical_price": 6.49
+        }
+      ]
+    },
+    {
+      "id": "mubi",
+      "name": "MUBI",
+      "category": "streaming",
+      "domain": "mubi.com",
+      "default_cycle": "monthly",
+      "typical_price": 11.99,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "hayu",
+      "name": "Hayu",
+      "category": "streaming",
+      "domain": "hayu.com",
+      "default_cycle": "monthly",
+      "typical_price": 5.99,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "tidal",
+      "name": "Tidal",
+      "category": "music",
+      "domain": "tidal.com",
+      "default_cycle": "monthly",
+      "typical_price": 10.99,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "deezer",
+      "name": "Deezer",
+      "category": "music",
+      "domain": "deezer.com",
+      "default_cycle": "monthly",
+      "typical_price": 11.99,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "kindle-unlimited",
+      "name": "Kindle Unlimited",
+      "category": "books",
+      "domain": "amazon.co.uk",
+      "default_cycle": "monthly",
+      "typical_price": 9.49,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "readly",
+      "name": "Readly",
+      "category": "news",
+      "domain": "readly.com",
+      "default_cycle": "monthly",
+      "typical_price": 9.99,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "apple-news-plus",
+      "name": "Apple News+",
+      "category": "news",
+      "domain": "apple.com",
+      "default_cycle": "monthly",
+      "typical_price": 12.99,
+      "notice_period_days": 0,
+      "cancel_method": "in_app"
+    },
+    {
+      "id": "ft",
+      "name": "Financial Times",
+      "category": "news",
+      "domain": "ft.com",
+      "default_cycle": "monthly",
+      "typical_price": 39.0,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "telegraph",
+      "name": "The Telegraph",
+      "category": "news",
+      "domain": "telegraph.co.uk",
+      "default_cycle": "monthly",
+      "typical_price": 14.99,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "ea-play",
+      "name": "EA Play",
+      "category": "gaming",
+      "domain": "ea.com",
+      "default_cycle": "monthly",
+      "typical_price": 5.99,
+      "notice_period_days": 0,
+      "cancel_method": "in_app"
+    },
+    {
+      "id": "apple-arcade",
+      "name": "Apple Arcade",
+      "category": "gaming",
+      "domain": "apple.com",
+      "default_cycle": "monthly",
+      "typical_price": 6.99,
+      "notice_period_days": 0,
+      "cancel_method": "in_app"
+    },
+    {
+      "id": "discord-nitro",
+      "name": "Discord Nitro",
+      "category": "gaming",
+      "domain": "discord.com",
+      "default_cycle": "monthly",
+      "typical_price": 9.99,
+      "notice_period_days": 0,
+      "cancel_method": "in_app"
+    },
+    {
+      "id": "apple-fitness-plus",
+      "name": "Apple Fitness+",
+      "category": "gym",
+      "domain": "apple.com",
+      "default_cycle": "monthly",
+      "typical_price": 9.99,
+      "notice_period_days": 0,
+      "cancel_method": "in_app"
+    },
+    {
+      "id": "peloton-app",
+      "name": "Peloton App",
+      "category": "gym",
+      "domain": "onepeloton.co.uk",
+      "default_cycle": "monthly",
+      "typical_price": 12.99,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "strava",
+      "name": "Strava",
+      "category": "gym",
+      "domain": "strava.com",
+      "default_cycle": "yearly",
+      "typical_price": 54.99,
+      "notice_period_days": 0,
+      "cancel_method": "in_app"
+    },
+    {
+      "id": "zwift",
+      "name": "Zwift",
+      "category": "gym",
+      "domain": "zwift.com",
+      "default_cycle": "monthly",
+      "typical_price": 17.99,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "headspace",
+      "name": "Headspace",
+      "category": "software",
+      "domain": "headspace.com",
+      "default_cycle": "yearly",
+      "typical_price": 49.99,
+      "notice_period_days": 0,
+      "cancel_method": "in_app"
+    },
+    {
+      "id": "calm",
+      "name": "Calm",
+      "category": "software",
+      "domain": "calm.com",
+      "default_cycle": "yearly",
+      "typical_price": 39.99,
+      "notice_period_days": 0,
+      "cancel_method": "in_app"
+    },
+    {
+      "id": "duolingo",
+      "name": "Duolingo Super",
+      "category": "software",
+      "domain": "duolingo.com",
+      "default_cycle": "monthly",
+      "typical_price": 12.99,
+      "notice_period_days": 0,
+      "cancel_method": "in_app"
+    },
+    {
+      "id": "1password",
+      "name": "1Password",
+      "category": "software",
+      "domain": "1password.com",
+      "default_cycle": "monthly",
+      "notice_period_days": 0,
+      "cancel_method": "website",
+      "plans": [
+        {
+          "label": "Individual",
+          "typical_price": 2.99
+        },
+        {
+          "label": "Families",
+          "typical_price": 4.99,
+          "seats": 5
+        }
+      ]
+    },
+    {
+      "id": "nordvpn",
+      "name": "NordVPN",
+      "category": "software",
+      "domain": "nordvpn.com",
+      "default_cycle": "monthly",
+      "typical_price": 10.39,
+      "notice_period_days": 0,
+      "cancel_method": "website",
+      "notes": "Intro multi-year deals jump sharply at renewal — set the intro-ends date"
+    },
+    {
+      "id": "github-copilot",
+      "name": "GitHub Copilot",
+      "category": "software",
+      "domain": "github.com",
+      "default_cycle": "monthly",
+      "typical_price": 8.0,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "canva-pro",
+      "name": "Canva Pro",
+      "category": "software",
+      "domain": "canva.com",
+      "default_cycle": "monthly",
+      "typical_price": 11.99,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "linkedin-premium",
+      "name": "LinkedIn Premium",
+      "category": "software",
+      "domain": "linkedin.com",
+      "default_cycle": "monthly",
+      "typical_price": 29.99,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "ring-protect",
+      "name": "Ring Protect",
+      "category": "utilities",
+      "domain": "ring.com",
+      "default_cycle": "monthly",
+      "notice_period_days": 0,
+      "cancel_method": "website",
+      "plans": [
+        {
+          "label": "Basic",
+          "typical_price": 4.99
+        },
+        {
+          "label": "Plus",
+          "typical_price": 10.0
+        }
+      ]
+    },
+    {
+      "id": "nest-aware",
+      "name": "Google Nest Aware",
+      "category": "utilities",
+      "domain": "store.google.com",
+      "default_cycle": "monthly",
+      "notice_period_days": 0,
+      "cancel_method": "website",
+      "plans": [
+        {
+          "label": "Aware",
+          "typical_price": 6.0
+        },
+        {
+          "label": "Aware Plus",
+          "typical_price": 12.0
+        }
+      ]
+    },
+    {
+      "id": "aa-breakdown",
+      "name": "AA Breakdown",
+      "category": "insurance",
+      "domain": "theaa.com",
+      "default_cycle": "yearly",
+      "typical_price": 120.0,
+      "notice_period_days": 0,
+      "cancel_method": "phone",
+      "notes": "Auto-renews at a higher price — renewal heads-up is the value"
+    },
+    {
+      "id": "rac-breakdown",
+      "name": "RAC Breakdown",
+      "category": "insurance",
+      "domain": "rac.co.uk",
+      "default_cycle": "yearly",
+      "typical_price": 110.0,
+      "notice_period_days": 0,
+      "cancel_method": "phone"
+    },
+    {
+      "id": "british-gas-homecare",
+      "name": "British Gas HomeCare",
+      "category": "utilities",
+      "domain": "britishgas.co.uk",
+      "default_cycle": "monthly",
+      "typical_price": 20.0,
+      "notice_period_days": 0,
+      "cancel_method": "phone",
+      "typical_min_term_months": 12
+    },
+    {
+      "id": "railcard",
+      "name": "Railcard",
+      "category": "other",
+      "domain": "railcard.co.uk",
+      "default_cycle": "yearly",
+      "typical_price": 30.0,
+      "notice_period_days": 0,
+      "cancel_method": "website",
+      "plans": [
+        {
+          "label": "16-25 / 26-30",
+          "typical_price": 30.0
+        },
+        {
+          "label": "Two Together",
+          "typical_price": 30.0
+        },
+        {
+          "label": "Senior",
+          "typical_price": 30.0
+        }
+      ]
+    },
+    {
+      "id": "national-trust",
+      "name": "National Trust",
+      "category": "other",
+      "domain": "nationaltrust.org.uk",
+      "default_cycle": "yearly",
+      "typical_price": 100.0,
+      "notice_period_days": 0,
+      "cancel_method": "phone"
+    },
+    {
+      "id": "odeon-limitless",
+      "name": "ODEON myLIMITLESS",
+      "category": "other",
+      "domain": "odeon.co.uk",
+      "default_cycle": "monthly",
+      "typical_price": 14.99,
+      "notice_period_days": 30,
+      "cancel_method": "website",
+      "typical_min_term_months": 3
+    },
+    {
+      "id": "cineworld-unlimited",
+      "name": "Cineworld Unlimited",
+      "category": "other",
+      "domain": "cineworld.co.uk",
+      "default_cycle": "monthly",
+      "typical_price": 10.99,
+      "notice_period_days": 0,
+      "cancel_method": "website",
+      "typical_min_term_months": 12
+    },
+    {
+      "id": "tastecard",
+      "name": "Tastecard",
+      "category": "food",
+      "domain": "tastecard.co.uk",
+      "default_cycle": "monthly",
+      "typical_price": 4.99,
+      "notice_period_days": 0,
+      "cancel_method": "website",
+      "notes": "Classic free-trial-then-forgotten subscription"
+    },
+    {
+      "id": "gousto",
+      "name": "Gousto",
+      "category": "food",
+      "domain": "gousto.co.uk",
+      "default_cycle": "weekly",
+      "typical_price": 35.0,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "amazon-kids-plus",
+      "name": "Amazon Kids+",
+      "category": "other",
+      "domain": "amazon.co.uk",
+      "default_cycle": "monthly",
+      "typical_price": 4.99,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    },
+    {
+      "id": "charity-donation",
+      "name": "Charity donation (monthly)",
+      "category": "other",
+      "default_cycle": "monthly",
+      "typical_price": 10.0,
+      "notice_period_days": 0,
+      "cancel_method": "varies",
+      "notes": "Direct-debit charity giving — worth tracking even if you keep it"
+    },
+    {
+      "id": "vpn-generic",
+      "name": "VPN (other)",
+      "category": "software",
+      "default_cycle": "monthly",
+      "typical_price": 10.0,
+      "notice_period_days": 0,
+      "cancel_method": "website"
+    }
   ]
 }

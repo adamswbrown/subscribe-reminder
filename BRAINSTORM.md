@@ -120,6 +120,62 @@ reminder channels (§6).
 subscriptions, confirm?"; forward-a-receipt email address; share-sheet from a
 confirmation email on mobile.
 
+### Discovery: onboarding when you don't know what you're subscribed to
+
+The commercial apps (Monarch Money, Rocket Money, Origin, Simplifi — surveyed Aug 2026)
+all answer this one way: link your bank, auto-detect recurring transactions, confirm.
+That's the right V2/V3 endgame, but there's a V1 answer that needs **zero integrations**
+and that none of the self-hosted projects do:
+
+**The guided audit.** A wizard that walks the user through the places where their
+subscriptions are already listed, one screen at a time, with the picker embedded so
+finds become entries in two taps:
+
+1. **Phone subscriptions** — iOS: Settings → your name → Subscriptions (deep link
+   `https://apps.apple.com/account/subscriptions`); Android: Play Store → Payments &
+   subscriptions. Catches every app-store-billed service (Apple One, Disney+, Duolingo,
+   Headspace…). Highest yield per minute of any step.
+2. **Bank app** — "open your banking app → Direct Debits & Standing Orders" (catches
+   gym, broadband, insurance, charity giving, TV licence) and "card transactions →
+   search for last month's small round amounts" (catches card-billed streamers).
+3. **Amazon** — Account → Memberships & Subscriptions (Prime, Kindle Unlimited,
+   Audible, Kids+, Subscribe & Save).
+4. **PayPal** — Settings → Payments → Automatic payments (the graveyard of forgotten
+   trials).
+5. **Email sweep** — pre-built inbox search links, e.g. Gmail
+   `subject:(receipt OR renewal OR "payment confirmation")` scoped to the last year;
+   the user skims and taps matching chips.
+
+Each step shows category-relevant picker chips ("found Sky? tap it") plus free-text.
+A progress line ("most people find 8–12") sets expectations and gamifies completeness.
+
+**Plan-from-price inference — solving "I don't know which plan".** Users rarely know
+their tier, but they can see the *charge amount* in the same places the audit points
+at. So invert the flow: on the add form, "Not sure which plan? Enter what you're
+charged" — we reverse-match the amount against the catalog's plan prices (±15% to
+absorb price rises) and suggest the tier: "£18.99/mo looks like Netflix Premium".
+Wrong or no match → store the price with plan label blank; price drives every
+calculation anyway, so an unknown plan costs the user nothing.
+
+Same trick for dates: "when were you last charged?" is easier to find than "when does
+it renew" — we compute the next renewal from last-charge + cycle, and mark the
+confidence accordingly.
+
+### What we take from prior art (concrete steals)
+
+- **Rocket Money**: list *and* calendar view of upcoming charges (our cash-flow view +
+  ICS feed cover this); default alert ~3 days before any charge; cancellation
+  assistance as the premium tier — matches our monetisation decision.
+- **Monarch Money**: manual "mark as recurring" complements auto-detection — our
+  equivalent is lazy-create from free text; couples/household dashboard validates our
+  V2 sharing plan; notifications 3 days before renewal as the default heads-up.
+- **Wallos (GitHub)**: multi-channel notification fan-out (email/Discord/Telegram/
+  ntfy/webhook) is their most-loved feature — our reminder_log channel enum is built
+  to grow this way; logo search UX; per-subscription payment-method tracking.
+- **subs / wapy.dev (GitHub)**: chip-based quick-add and minimal onboarding friction —
+  already our picker's shape.
+- **All of them**: nobody does notice periods, contract cliffs, or intent. Still the moat.
+
 ## 5. Capturing type / level of subscription
 
 - The catalog carries **known plans per service** (e.g. Netflix: Standard with ads /
