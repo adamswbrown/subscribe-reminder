@@ -1,7 +1,9 @@
 import Link from "next/link";
 import type { Subscription } from "@/lib/types";
 import { formatMoney, cycleLabel, daysUntil } from "@/lib/money";
+import { findService } from "@/lib/catalog";
 import { setIntent, markCancelled } from "@/app/dashboard/actions";
+import { ServiceLogo } from "./ServiceLogo";
 
 function DeadlineChip({ sub }: { sub: Subscription }) {
   const days = daysUntil(sub.action_deadline);
@@ -33,8 +35,11 @@ export function SubRow({ sub }: { sub: Subscription }) {
   const setReview = setIntent.bind(null, sub.id, "review");
   const cancelled = markCancelled.bind(null, sub.id);
 
+  const domain = sub.catalog_id ? findService(sub.catalog_id)?.domain : undefined;
+
   return (
     <div className="sub-row">
+      <ServiceLogo name={sub.name} domain={domain} size={30} />
       <div>
         <div className="name">
           {sub.name}

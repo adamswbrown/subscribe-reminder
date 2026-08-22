@@ -7,6 +7,7 @@ import {
   type CatalogService,
 } from "@/lib/catalog";
 import { SubscriptionForm } from "./SubscriptionForm";
+import { ServiceLogo } from "./ServiceLogo";
 
 export function AddFlow({
   action,
@@ -58,7 +59,17 @@ export function AddFlow({
         <button className="btn-small" onClick={() => setSelected(null)}>
           ← back to the picker
         </button>
-        <h1 style={{ fontSize: "1.3rem" }}>Add {selected.name}</h1>
+        <h1
+          style={{
+            fontSize: "1.3rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.55rem",
+          }}
+        >
+          <ServiceLogo name={selected.name} domain={selected.domain} size={28} />
+          Add {selected.name}
+        </h1>
         {selected.notes && <p className="muted">{selected.notes}</p>}
         <SubscriptionForm
           initial={{
@@ -102,6 +113,7 @@ export function AddFlow({
                 className="chip"
                 onClick={() => setSelected(s)}
               >
+                <ServiceLogo name={s.name} domain={s.domain} size={18} />
                 {s.name}
               </button>
             ))}
