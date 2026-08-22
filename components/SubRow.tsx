@@ -1,0 +1,121 @@
+import Link from "next/link";
+import type { Subscription } from "@/lib/types";
+import { formatMoney, cycleLabel, daysUntil } from "@/lib/money";
+import { findService } from "@/lib/catalog";
+import {
+  setIntent,
+  markCancelled,
+  snoozeReminders,
+} from "@/app/dashboard/actions";
+import { ServiceLogo } from "./ServiceLogo";
+
+function DeadlineChip({ sub }: { sub: Subscription }) {
+  const days = daysUntil(sub.action_deadline);
+  const renewDays = daysUntil(sub.next_renewal_date);
+  let cls = "deadline";
+  let text: string;
+
+  if (sub.intent === "cancel") {
+    if (days < 0) text = "deadline passed — did you cancel?";
+    else if (days === 0) text = "⚠️ last day to cancel";
+    else text = `cancel by ${sub.action_deadline} (${days}d)`;
+    if (days <= 1) cls += " urgent";
+    else if (days <= 3) cls += " soon";
+  } else {
+    text =
+      renewDays === 0
+        ? "renews today"
+        : renewDays < 0
+          ? "renewal date passed"
+          : `renews in ${renewDays}d`;
+    if (sub.intent === "review" && renewDays <= 5) cls += " soon";
+  }
+  return <span className={cls}>{text}</span>;
+}
+
+export function SubRow({ sub }: { sub: Subscription }) {
+  const setKeep = setIntent.bind(null, sub.id, "keep");
+  const setCancel = setIntent.bind(null, sub.id, "cancel");
+  const setReview = setIntent.bind(null, sub.id, "review");
+  const cancelled = markCancelled.bind(null, sub.id);
+  const snooze = snoozeReminders.bind(null, sub.id, 3);
+  const snoozed =
+    sub.reminders_snoozed_until && daysUntil(sub.reminders_snoozed_until) > 0;
+
+  const domain = sub.catalog_id ? findService(sub.catalog_id)?.domain : undefined;
+
+  return (
+    <div className="sub-row">
+      <ServiceLogo name={sub.name} domain={domain} size={30} />
+      <div>
+        <div className="name">
+          {sub.name}
+          {sub.plan_label ? (
+            <span className="meta"> · {sub.plan_label}</span>
+          ) : null}
+        </div>
+        <div className="meta">
+          {formatMoney(sub.price, sub.currency)}
+          {cycleLabel(sub.cycle, sub.cycle_custom_days)}
+          {sub.notice_period_days > 0 &&
+            ` · ${sub.notice_period_days}d notice`}
+        </div>
+      </div>
+      <span className={`badge ${sub.intent}`}>{sub.intent}</span>
+      <DeadlineChip sub={sub} />
+      <span className="spacer" />
+      <div style={{ display: "flex", gap: "0.35rem", alignItems: "center" }}>
+        {sub.intent !== "keep" && (
+          <form action={setKeep}>
+            <button className="btn-small" title="Keep this subscription">
+              keep
+            </button>
+          </form>
+        )}
+        {sub.intent !== "cancel" && (
+          <form action={setCancel}>
+            <button
+              className="btn-small btn-danger"
+              title="Remind me to cancel before it renews"
+            >
+              cancel…
+            </button>
+          </form>
+        )}
+        {sub.intent !== "review" && (
+          <form action={setReview}>
+            <button className="btn-small" title="Remind me to decide">
+              review
+            </button>
+          </form>
+        )}
+        {sub.intent === "cancel" && (
+          <form action={cancelled}>
+            <button
+              className="btn-small"
+              style={{ color: "var(--good)" }}
+              title="I've cancelled it"
+            >
+              done ✓
+            </button>
+          </form>
+        )}
+        {sub.intent !== "keep" &&
+          (snoozed ? (
+            <span className="deadline" title="Reminders snoozed">
+              💤 until {sub.reminders_snoozed_until}
+            </span>
+          ) : (
+            <form action={snooze}>
+              <button className="btn-small" title="Silence reminders for 3 days">
+                snooze 3d
+              </button>
+            </form>
+          ))}
+        <Link className="btn btn-small" href={`/dashboard/edit/${sub.id}`}>
+          edit
+        </Link>
+      </div>
+    </div>
+  );
+}
