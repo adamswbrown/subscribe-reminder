@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { todayISO } from "@/lib/money";
 
 function str(form: FormData, key: string): string | null {
   const v = form.get(key);
@@ -21,11 +22,12 @@ function subscriptionFromForm(form: FormData) {
   const notSure = form.get("renewal_not_sure") === "on";
   const oneMonth = form.get("one_month") === "on";
   let nextRenewal = str(form, "next_renewal_date");
+  let fabricated = false;
   if (!nextRenewal) {
-    // Default: first of next month, flagged low-confidence
-    const d = new Date();
-    d.setMonth(d.getMonth() + 1, 1);
-    nextRenewal = d.toISOString().slice(0, 10);
+    // Default: first of next month (UK calendar), always flagged low-confidence
+    fabricated = true;
+    const [y, m] = todayISO().split("-").map(Number);
+    nextRenewal = new Date(Date.UTC(y, m, 1)).toISOString().slice(0, 10);
   }
   const intent = oneMonth ? "cancel" : (str(form, "intent") ?? "review");
 
@@ -39,7 +41,7 @@ function subscriptionFromForm(form: FormData) {
     cycle: str(form, "cycle") ?? "monthly",
     cycle_custom_days: num(form, "cycle_custom_days"),
     next_renewal_date: nextRenewal,
-    renewal_confidence: notSure ? "unknown" : "exact",
+    renewal_confidence: notSure || fabricated ? "unknown" : "exact",
     intent,
     trial_end_date: str(form, "trial_end_date"),
     contract_end_date: str(form, "contract_end_date"),
@@ -98,7 +100,7 @@ export async function markCancelled(id: string) {
     .from("subscriptions")
     .update({
       state: "cancelled",
-      cancelled_effective: new Date().toISOString().slice(0, 10),
+      cancelled_effective: todayISO(),
     })
     .eq("id", id);
   if (error) throw new Error(error.message);

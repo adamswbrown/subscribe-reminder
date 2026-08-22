@@ -1,5 +1,6 @@
 import { headers } from "next/headers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { originFromHeaders } from "@/lib/origin";
 
 export const dynamic = "force-dynamic";
 
@@ -13,16 +14,10 @@ export default async function SettingsPage() {
     .select("ics_token, email_digest, timezone")
     .single();
 
-  const headerList = await headers();
-  const host =
-    headerList.get("x-forwarded-host") ??
-    headerList.get("host") ??
-    "localhost:3000";
-  const proto =
-    headerList.get("x-forwarded-proto") ??
-    (host.startsWith("localhost") ? "http" : "https");
+  const origin =
+    originFromHeaders(await headers()) ?? "http://localhost:3000";
   const feedUrl = settings
-    ? `${proto}://${host}/api/calendar/${settings.ics_token}.ics`
+    ? `${origin}/api/calendar/${settings.ics_token}.ics`
     : null;
 
   return (

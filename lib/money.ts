@@ -42,9 +42,16 @@ export function cycleLabel(cycle: Cycle, customDays?: number | null): string {
   }
 }
 
+// The product's calendar day is the UK's, not the server's UTC day (see
+// BRAINSTORM: UK-first decision) — around midnight BST these differ.
+export function todayISO(): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/London",
+  }).format(new Date());
+}
+
 export function daysUntil(dateStr: string): number {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const target = new Date(dateStr + "T00:00:00");
-  return Math.round((target.getTime() - today.getTime()) / 86400000);
+  const today = Date.parse(todayISO() + "T00:00:00Z");
+  const target = Date.parse(dateStr + "T00:00:00Z");
+  return Math.round((target - today) / 86400000);
 }

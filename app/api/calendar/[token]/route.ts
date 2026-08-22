@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 
 interface FeedEvent {
+  sub_id: string;
   sub_name: string;
   event_kind: string;
   event_date: string;
@@ -9,8 +10,35 @@ interface FeedEvent {
   intent: string;
 }
 
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
 function icsEscape(s: string): string {
   return s.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,");
+}
+
+// RFC 5545 §3.1: content lines longer than 75 octets should be folded with
+// CRLF followed by a single space.
+const encoder = new TextEncoder();
+function foldLine(line: string): string {
+  if (encoder.encode(line).length <= 75) return line;
+  const segments: string[] = [];
+  let current = "";
+  let currentOctets = 0;
+  for (const ch of line) {
+    const chOctets = encoder.encode(ch).length;
+    const limit = segments.length === 0 ? 75 : 74; // continuations start with a space
+    if (currentOctets + chOctets > limit) {
+      segments.push(current);
+      current = ch;
+      currentOctets = chOctets;
+    } else {
+      current += ch;
+      currentOctets += chOctets;
+    }
+  }
+  segments.push(current);
+  return segments.join("\r\n ");
 }
 
 function eventTitle(e: FeedEvent): string {
@@ -39,7 +67,7 @@ export async function GET(
 ) {
   const { token: raw } = await params;
   const token = raw.replace(/\.ics$/, "");
-  if (!/^[0-9a-f-]{36}$/.test(token)) {
+  if (!UUID_RE.test(token)) {
     return new Response("Not found", { status: 404 });
   }
 
@@ -66,7 +94,7 @@ export async function GET(
 
   for (const e of events) {
     const date = e.event_date.replace(/-/g, "");
-    const uid = `${e.event_kind}-${date}-${e.sub_name.replace(/\W/g, "")}@subscribe-reminder`;
+    const uid = `${e.event_kind}-${date}-${e.sub_id}@subscribe-reminder`;
     lines.push(
       "BEGIN:VEVENT",
       `UID:${uid}`,
@@ -83,7 +111,7 @@ export async function GET(
   }
   lines.push("END:VCALENDAR");
 
-  return new Response(lines.join("\r\n"), {
+  return new Response(lines.map(foldLine).join("\r\n"), {
     headers: {
       "Content-Type": "text/calendar; charset=utf-8",
       "Cache-Control": "private, max-age=900",

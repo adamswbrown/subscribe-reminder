@@ -39,12 +39,18 @@ function body(r: DueReminder): string {
       `This service needs ${r.notice_period_days} days' notice, so today is about acting, not the renewal date.`
     );
   }
-  lines.push("", "Open your dashboard to act or snooze:", appUrl());
+  lines.push("", "Open your dashboard to act:", appUrl());
   return lines.join("\n");
 }
 
 function appUrl(): string {
-  return process.env.APP_URL ?? "https://web-production-b24d64.up.railway.app/dashboard";
+  // APP_URL is the site origin; tolerate a trailing slash or /dashboard path.
+  const base = (
+    process.env.APP_URL ?? "https://web-production-b24d64.up.railway.app"
+  )
+    .replace(/\/+$/, "")
+    .replace(/\/dashboard$/, "");
+  return `${base}/dashboard`;
 }
 
 async function sendEmail(to: string, subj: string, text: string) {

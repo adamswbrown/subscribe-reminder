@@ -172,6 +172,7 @@ export function SubscriptionForm({
             name="next_renewal_date"
             type="date"
             disabled={notSure}
+            required={!notSure}
             defaultValue={initial.next_renewal_date}
           />
           <label
@@ -204,7 +205,7 @@ export function SubscriptionForm({
           ].map(([value, label]) => (
             <label
               key={value}
-              className={`chip ${intent === value && !oneMonth ? "selected" : ""}`}
+              className={`chip ${intent === value ? "selected" : ""}`}
               style={{ display: "inline-flex", gap: "0.4rem" }}
             >
               <input
@@ -212,7 +213,10 @@ export function SubscriptionForm({
                 name="intent"
                 value={value}
                 checked={intent === value}
-                onChange={() => setIntent(value)}
+                onChange={() => {
+                  setIntent(value);
+                  if (value !== "cancel") setOneMonth(false);
+                }}
                 style={{ display: "none" }}
               />
               {label}
