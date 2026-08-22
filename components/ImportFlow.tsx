@@ -37,6 +37,31 @@ export function ImportFlow({
     );
   }
 
+  // Safari decodes HEIC natively; route it through a canvas to get a PNG
+  // tesseract can read. (Chrome/Firefox can't decode HEIC at all.)
+  async function decodeToPng(file: File): Promise<Blob> {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = new Image();
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error("decode failed"));
+        img.src = url;
+      });
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      canvas.getContext("2d")!.drawImage(img, 0, 0);
+      const blob = await new Promise<Blob | null>((r) =>
+        canvas.toBlob(r, "image/png")
+      );
+      if (!blob) throw new Error("decode failed");
+      return blob;
+    } finally {
+      URL.revokeObjectURL(url);
+    }
+  }
+
   async function handleScreenshots(files: FileList) {
     setBusy(true);
     setError(null);
@@ -55,13 +80,18 @@ export function ImportFlow({
         const all: ImportSuggestion[] = [];
         const list = [...files].slice(0, 6);
         for (let i = 0; i < list.length; i++) {
-          if (/heic|heif/i.test(list[i].type)) {
-            throw new Error(
-              `${list[i].name} is HEIC — screenshots are PNG, or convert the photo to JPEG first`
-            );
-          }
           setProgress(`Reading image ${i + 1} of ${list.length}…`);
-          const { data } = await worker.recognize(list[i]);
+          const file = list[i];
+          const isHeic =
+            /heic|heif/i.test(file.type) || /\.hei[cf]$/i.test(file.name);
+          const input = isHeic
+            ? await decodeToPng(file).catch(() => {
+                throw new Error(
+                  `${file.name} is HEIC and this browser can't decode it — open the site in Safari, or convert it to JPEG`
+                );
+              })
+            : file;
+          const { data } = await worker.recognize(input);
           all.push(...extractFromText(data.text));
         }
         // Dedupe across images by service + price (same service at two
