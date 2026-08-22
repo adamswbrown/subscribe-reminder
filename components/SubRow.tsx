@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Subscription } from "@/lib/types";
 import { formatMoney, cycleLabel, daysUntil } from "@/lib/money";
-import { setIntent, markCancelled } from "@/app/app/actions";
+import { setIntent, markCancelled } from "@/app/dashboard/actions";
 
 function DeadlineChip({ sub }: { sub: Subscription }) {
   const days = daysUntil(sub.action_deadline);
@@ -88,7 +88,7 @@ export function SubRow({ sub }: { sub: Subscription }) {
             </button>
           </form>
         )}
-        <Link className="btn btn-small" href={`/app/edit/${sub.id}`}>
+        <Link className="btn btn-small" href={`/dashboard/edit/${sub.id}`}>
           edit
         </Link>
       </div>

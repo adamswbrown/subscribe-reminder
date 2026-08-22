@@ -59,7 +59,7 @@ export default async function Dashboard() {
             Pick from common services — Netflix, Spotify, your gym, your
             broadband — and we&apos;ll keep an eye on the dates that matter.
           </p>
-          <Link href="/app/add" className="btn btn-primary">
+          <Link href="/dashboard/add" className="btn btn-primary">
             Add your first subscription
           </Link>
         </div>

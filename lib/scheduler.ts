@@ -44,7 +44,7 @@ function body(r: DueReminder): string {
 }
 
 function appUrl(): string {
-  return process.env.APP_URL ?? "https://web-production-b24d64.up.railway.app/app";
+  return process.env.APP_URL ?? "https://web-production-b24d64.up.railway.app/dashboard";
 }
 
 async function sendEmail(to: string, subj: string, text: string) {

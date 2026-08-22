@@ -64,11 +64,11 @@ export async function addSubscription(form: FormData) {
     .insert({ ...subscriptionFromForm(form), user_id: user.id });
   if (error) throw new Error(error.message);
 
-  revalidatePath("/app");
+  revalidatePath("/dashboard");
   if (form.get("add_another") === "true") {
-    redirect("/app/add?added=1");
+    redirect("/dashboard/add?added=1");
   }
-  redirect("/app");
+  redirect("/dashboard");
 }
 
 export async function updateSubscription(id: string, form: FormData) {
@@ -78,8 +78,8 @@ export async function updateSubscription(id: string, form: FormData) {
     .update(subscriptionFromForm(form))
     .eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/app");
-  redirect("/app");
+  revalidatePath("/dashboard");
+  redirect("/dashboard");
 }
 
 export async function setIntent(id: string, intent: string) {
@@ -89,7 +89,7 @@ export async function setIntent(id: string, intent: string) {
     .update({ intent })
     .eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/app");
+  revalidatePath("/dashboard");
 }
 
 export async function markCancelled(id: string) {
@@ -102,7 +102,7 @@ export async function markCancelled(id: string) {
     })
     .eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/app");
+  revalidatePath("/dashboard");
 }
 
 export async function reactivate(id: string) {
@@ -112,13 +112,13 @@ export async function reactivate(id: string) {
     .update({ state: "active", cancelled_effective: null })
     .eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/app");
+  revalidatePath("/dashboard");
 }
 
 export async function deleteSubscription(id: string) {
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.from("subscriptions").delete().eq("id", id);
   if (error) throw new Error(error.message);
-  revalidatePath("/app");
-  redirect("/app");
+  revalidatePath("/dashboard");
+  redirect("/dashboard");
 }
