@@ -228,6 +228,22 @@ for tests), a scheduler/queue for reminder fan-out, Next.js/React PWA, web push 
 (Resend/Postmark) + ICS endpoint. Nothing exotic — one small server, one database, one
 cron loop.
 
+**Hosting decision: Supabase + Railway.**
+
+- **Supabase** provides the managed Postgres, and its Auth gives us magic-link email
+  login out of the box — exactly the auth we chose, deleting a chunk of V1 work. Row
+  Level Security handles multi-tenant isolation cheaply. Schema ships as Supabase
+  migrations; `supabase start` joins the local compose setup for dev parity. (Free-tier
+  caveat: projects pause after ~a week of inactivity — the daily reminder cron keeps it
+  awake, but move to paid before there are real users.)
+- **Railway** runs the Next.js app *and* the reminder scheduler as one always-on
+  container — the same image locally, in CI, and in prod. Chosen over Vercel because the
+  cron **is** the product: a serverless cron with loose timing and no retries risks a
+  silently missed cancel deadline, while a long-lived process we own gets precise timing,
+  retries, and a dead-man's-switch ping. (Trade-off accepted: we give up Vercel's
+  preview deployments; revisit a Vercel-frontend + Railway-worker split only if that
+  starts to hurt.)
+
 ## 9. Roadmap sketch
 
 - **V1:** picker onboarding + seed catalog, manual subscriptions, intent field, typed
@@ -245,6 +261,9 @@ Decided:
 
 - **Hosted multi-tenant product**, not self-hosted-first (see §8). Self-hosting stays
   possible via the dev/test `docker compose` setup, but drives no feature decisions.
+- **Infra: Supabase (Postgres + magic-link auth via Supabase Auth, RLS for tenant
+  isolation) + Railway (Next.js app and reminder scheduler in one always-on container)**
+  — chosen over Vercel because reliable, retryable cron delivery is the product (§8).
 - **Both pillars**: expense view and intent/deadline layer, one data model (§1, §7).
 - **UK-first catalog**, GBP default (§2, [`data/catalog.seed.json`](data/catalog.seed.json)).
   The catalog schema stays region-ready (per-service currency/price is just data), so
