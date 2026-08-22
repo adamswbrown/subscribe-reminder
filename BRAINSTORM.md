@@ -212,10 +212,21 @@ iOS — which is exactly where web push is weakest. (Caveat: Google Calendar ref
 external feeds slowly, ~12–24h — fine for deadlines known weeks ahead, and push/email
 cover the fast path.)
 
-Suggested V1 stack (matching the strongest recent projects in §1): Next.js/React PWA,
-SQLite/Postgres, a daily reminder-scheduler job, web push + email (Resend/Postmark) +
-ICS endpoint. Self-hostable via Docker from day one — that's the audience that adopted
-Wallos and subtrackr.
+**Decision: this is a hosted product, not a self-hosted one.** The self-hosted niche is
+well served (Wallos, subtrackr — that's their audience, not ours); the people who most
+need cancel reminders will never run Docker. Hosted also makes the product actually work:
+reminders fire from our infrastructure whether or not you ever reopen the app, email and
+push come from managed senders with real deliverability, and the ICS feed URL is always
+reachable. That said, the whole stack should still run from a single `docker compose up`
+— for local dev, testing, and CI parity, and as a happy side effect anyone determined to
+self-host can. It's a deployment mode we keep working, not a product line we design for:
+no feature decisions get made for the self-host case.
+
+Consequences for the V1 stack: multi-tenant and auth from day one (magic-link email login
+fits — we need their email address for reminders anyway), managed Postgres (SQLite only
+for tests), a scheduler/queue for reminder fan-out, Next.js/React PWA, web push + email
+(Resend/Postmark) + ICS endpoint. Nothing exotic — one small server, one database, one
+cron loop.
 
 ## 9. Roadmap sketch
 
@@ -227,9 +238,19 @@ Wallos and subtrackr.
 - **V3:** email receipt parsing, Open Banking sync, "how to cancel" playbooks per service,
   community catalog contributions.
 
-## 10. Open questions
+## 10. Decisions & open questions
 
-1. Single-user self-hosted first (Wallos audience) or hosted multi-tenant from day one?
-2. GBP/UK-centric catalog first (Now TV, PureGym, BT…) with region packs later — acceptable?
-3. Is "paused" state needed at V1 (e.g. Audible pause, gym freeze) or is cancelled+re-add enough?
-4. How much of the catalog do we ship vs. lazy-create from free text + favicon?
+Decided:
+
+- **Hosted multi-tenant product**, not self-hosted-first (see §8). Self-hosting stays
+  possible via the dev/test `docker compose` setup, but drives no feature decisions.
+- **Both pillars**: expense view and intent/deadline layer, one data model (§1, §7).
+
+Open:
+
+1. GBP/UK-centric catalog first (Now TV, PureGym, BT…) with region packs later — acceptable?
+2. Is "paused" state needed at V1 (e.g. Audible pause, gym freeze) or is cancelled+re-add enough?
+3. How much of the catalog do we ship vs. lazy-create from free text + favicon?
+4. Monetisation for the hosted product — free while personal-scale, or free tier +
+   paid tier (imports, household sharing) later? (Yes, a subscription for the
+   subscription-cancelling app — pricing it honestly is part of the brand.)
