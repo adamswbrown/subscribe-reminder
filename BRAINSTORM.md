@@ -245,12 +245,15 @@ Decided:
 - **Hosted multi-tenant product**, not self-hosted-first (see §8). Self-hosting stays
   possible via the dev/test `docker compose` setup, but drives no feature decisions.
 - **Both pillars**: expense view and intent/deadline layer, one data model (§1, §7).
+- **UK-first catalog**, GBP default (§2, [`data/catalog.seed.json`](data/catalog.seed.json)).
+  The catalog schema stays region-ready (per-service currency/price is just data), so
+  other regions arrive later as additional catalog packs, not a schema change. Free-text
+  add always works regardless of region.
 
 Open:
 
-1. GBP/UK-centric catalog first (Now TV, PureGym, BT…) with region packs later — acceptable?
-2. Is "paused" state needed at V1 (e.g. Audible pause, gym freeze) or is cancelled+re-add enough?
-3. How much of the catalog do we ship vs. lazy-create from free text + favicon?
-4. Monetisation for the hosted product — free while personal-scale, or free tier +
+1. Is "paused" state needed at V1 (e.g. Audible pause, gym freeze) or is cancelled+re-add enough?
+2. How much of the catalog do we ship vs. lazy-create from free text + favicon?
+3. Monetisation for the hosted product — free while personal-scale, or free tier +
    paid tier (imports, household sharing) later? (Yes, a subscription for the
    subscription-cancelling app — pricing it honestly is part of the brand.)
