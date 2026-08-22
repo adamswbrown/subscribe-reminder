@@ -22,7 +22,14 @@ export function ImportFlow({
 
   function showSuggestions(list: ImportSuggestion[]) {
     setSuggestions(list);
-    setSelected(new Set(list.map((_, i) => i)));
+    // Pre-tick everything that looks live; expired entries stay unticked.
+    setSelected(
+      new Set(
+        list
+          .map((s, i) => (s.next_renewal_date || s.price != null ? i : -1))
+          .filter((i) => i >= 0)
+      )
+    );
     setError(
       list.length === 0
         ? "Nothing recognisable found — try a clearer screenshot or a different file."
@@ -36,29 +43,43 @@ export function ImportFlow({
     setProgress("Loading OCR engine…");
     try {
       // OCR runs entirely in the browser (WASM) — screenshots never upload.
+      // All engine assets are served from our own origin: third-party CDNs
+      // get blocked by content blockers and filtered networks.
       const { createWorker } = await import("tesseract.js");
-      const worker = await createWorker("eng");
+      const worker = await createWorker("eng", 1, {
+        workerPath: "/tesseract/worker.min.js",
+        corePath: "/tesseract",
+        langPath: "/tesseract/lang",
+      });
       try {
         const all: ImportSuggestion[] = [];
         const list = [...files].slice(0, 6);
         for (let i = 0; i < list.length; i++) {
+          if (/heic|heif/i.test(list[i].type)) {
+            throw new Error(
+              `${list[i].name} is HEIC — screenshots are PNG, or convert the photo to JPEG first`
+            );
+          }
           setProgress(`Reading image ${i + 1} of ${list.length}…`);
           const { data } = await worker.recognize(list[i]);
           all.push(...extractFromText(data.text));
         }
-        // Dedupe across images by catalog id / name
+        // Dedupe across images by service + price (same service at two
+        // prices = two real subscriptions, e.g. two NOW memberships)
         const seen = new Map<string, ImportSuggestion>();
         for (const s of all) {
-          const key = s.catalog_id ?? s.name.toLowerCase();
+          const key = `${s.catalog_id ?? s.name.toLowerCase()}|${s.price ?? ""}`;
           if (!seen.has(key)) seen.set(key, s);
         }
         showSuggestions([...seen.values()]);
       } finally {
         await worker.terminate();
       }
-    } catch {
+    } catch (err) {
+      const detail =
+        err instanceof Error ? err.message : typeof err === "string" ? err : "";
       setError(
-        "Couldn't read those images — try sharper screenshots (crop to the list if you can)."
+        `Couldn't read those images${detail ? ` (${detail})` : ""} — try sharper screenshots, cropped to the list.`
       );
     } finally {
       setBusy(false);
