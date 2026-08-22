@@ -10,3 +10,8 @@ Currently in the ideas stage:
 - **[data/catalog.seed.json](data/catalog.seed.json)** — starter catalog of ~45 common
   services (UK-leaning) with categories, typical plans/prices, billing cycles, and
   cancellation notice periods, for the onboarding picker.
+- **[supabase/migrations](supabase/migrations)** — database schema, applied to the live
+  Supabase project `subscribe-reminder` (eu-west-2): subscriptions with intent and a
+  generated `action_deadline`, price history, reminder log, web-push endpoints, and
+  per-user settings with the private ICS feed token — all behind owner-only RLS.
+  Copy `.env.example` to `.env` for connection details.
