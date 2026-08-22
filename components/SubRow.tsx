@@ -33,7 +33,13 @@ function DeadlineChip({ sub }: { sub: Subscription }) {
   return <span className={cls}>{text}</span>;
 }
 
-export function SubRow({ sub }: { sub: Subscription }) {
+export function SubRow({
+  sub,
+  compact = false,
+}: {
+  sub: Subscription;
+  compact?: boolean;
+}) {
   const setKeep = setIntent.bind(null, sub.id, "keep");
   const setCancel = setIntent.bind(null, sub.id, "cancel");
   const setReview = setIntent.bind(null, sub.id, "review");
@@ -45,12 +51,15 @@ export function SubRow({ sub }: { sub: Subscription }) {
   const domain = sub.catalog_id ? findService(sub.catalog_id)?.domain : undefined;
 
   return (
-    <div className="sub-row">
-      <ServiceLogo name={sub.name} domain={domain} size={30} />
+    <div className={compact ? "sub-row sub-row-compact" : "sub-row"}>
+      {!compact && <ServiceLogo name={sub.name} domain={domain} size={30} />}
       <div>
         <div className="name">
-          {sub.name}
-          {sub.plan_label ? (
+          {compact
+            ? (sub.plan_label ??
+              `${formatMoney(sub.price, sub.currency)}${cycleLabel(sub.cycle, sub.cycle_custom_days)}`)
+            : sub.name}
+          {!compact && sub.plan_label ? (
             <span className="meta"> · {sub.plan_label}</span>
           ) : null}
         </div>
