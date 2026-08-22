@@ -234,11 +234,12 @@ cron loop.
   reminders (push/email/ICS), expense dashboard (monthly/annual totals, category
   breakdown, cash-flow calendar), confirm-cancel loop with savings tally.
 - **V2:** bank-CSV import with recurring detection, bundles, household sharing/splitting,
-  reminder-behaviour learning, price history + lifetime spend per service.
+  reminder-behaviour learning, price history + lifetime spend per service,
+  paused-subscription management UI (pause/freeze with restart reminder).
 - **V3:** email receipt parsing, Open Banking sync, "how to cancel" playbooks per service,
   community catalog contributions.
 
-## 10. Decisions & open questions
+## 10. Decisions
 
 Decided:
 
@@ -250,10 +251,18 @@ Decided:
   other regions arrive later as additional catalog packs, not a schema change. Free-text
   add always works regardless of region.
 
-Open:
+- **Paused state: in the schema now, UI in V2.** Audible pauses and gym freezes are real,
+  and an *unpause* is exactly the silent money-leak this app exists to catch (paused subs
+  show £0 in totals, get a "payments restart on <date>" reminder). The state costs
+  nothing to include in the model from day one; V1 ships without the management UI.
+- **Catalog: curate the top ~50–100, lazy-create the long tail.** Unknown services get an
+  entry created on the fly — favicon from the domain, user-typed price, no pre-fills.
+  Frequently lazy-created services get promoted into the curated catalog over time, so
+  usage data drives what we curate next.
+- **Monetisation: free while personal-scale; revisit when there are real users.** If a
+  paid tier ever exists it gates the expensive extras (bank imports, household sharing),
+  never core tracking/reminders — and it must be aggressively honest: one-click cancel,
+  a reminder before *our own* renewal, no dark patterns. A subscription app that's hard
+  to cancel would be self-satire.
 
-1. Is "paused" state needed at V1 (e.g. Audible pause, gym freeze) or is cancelled+re-add enough?
-2. How much of the catalog do we ship vs. lazy-create from free text + favicon?
-3. Monetisation for the hosted product — free while personal-scale, or free tier +
-   paid tier (imports, household sharing) later? (Yes, a subscription for the
-   subscription-cancelling app — pricing it honestly is part of the brand.)
+No open questions remain — next step is scaffolding V1 (§9).
