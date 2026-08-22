@@ -14,8 +14,13 @@ export default async function SettingsPage() {
     .single();
 
   const headerList = await headers();
-  const host = headerList.get("host") ?? "localhost:3000";
-  const proto = host.startsWith("localhost") ? "http" : "https";
+  const host =
+    headerList.get("x-forwarded-host") ??
+    headerList.get("host") ??
+    "localhost:3000";
+  const proto =
+    headerList.get("x-forwarded-proto") ??
+    (host.startsWith("localhost") ? "http" : "https");
   const feedUrl = settings
     ? `${proto}://${host}/api/calendar/${settings.ics_token}.ics`
     : null;
