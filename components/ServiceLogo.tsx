@@ -53,7 +53,7 @@ export function ServiceLogo({
     // eslint-disable-next-line @next/next/no-img-element
     <img
       className="logo"
-      src={`https://icons.duckduckgo.com/ip3/${domain}.ico`}
+      src={`/api/icon/${domain}`}
       alt=""
       width={size}
       height={size}
