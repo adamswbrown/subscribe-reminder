@@ -4,6 +4,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { todayISO } from "@/lib/money";
+import { findService } from "@/lib/catalog";
+import type { ImportSuggestion } from "@/lib/importTypes";
 
 function str(form: FormData, key: string): string | null {
   const v = form.get(key);
@@ -115,6 +117,62 @@ export async function reactivate(id: string) {
     .eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/dashboard");
+}
+
+const CYCLE_DAYS: Record<string, number> = {
+  weekly: 7,
+  monthly: 30,
+  quarterly: 91,
+  yearly: 365,
+};
+
+export async function addSubscriptionsBulk(suggestions: ImportSuggestion[]) {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const rows = suggestions.slice(0, 50).map((s) => {
+    const service = s.catalog_id ? findService(s.catalog_id) : undefined;
+    const cycle = s.cycle ?? "monthly";
+    let nextRenewal = s.next_renewal_date;
+    let confidence = "approximate";
+    if (!nextRenewal && s.last_charged) {
+      const last = Date.parse(s.last_charged + "T00:00:00Z");
+      if (Number.isFinite(last)) {
+        nextRenewal = new Date(last + (CYCLE_DAYS[cycle] ?? 30) * 86400000)
+          .toISOString()
+          .slice(0, 10);
+      }
+    }
+    if (!nextRenewal) {
+      const [y, m] = todayISO().split("-").map(Number);
+      nextRenewal = new Date(Date.UTC(y, m, 1)).toISOString().slice(0, 10);
+      confidence = "unknown";
+    }
+    return {
+      user_id: user.id,
+      catalog_id: service?.id ?? null,
+      name: (s.name || service?.name || "Subscription").slice(0, 120),
+      category: s.category ?? service?.category ?? "other",
+      plan_label: s.plan_label,
+      price: Math.max(0, Number(s.price) || 0),
+      currency: "GBP",
+      cycle,
+      next_renewal_date: nextRenewal,
+      renewal_confidence: confidence,
+      intent: "review",
+      notice_period_days: service?.notice_period_days ?? 0,
+      cancel_method: service?.cancel_method ?? "website",
+    };
+  });
+  if (rows.length === 0) return;
+
+  const { error } = await supabase.from("subscriptions").insert(rows);
+  if (error) throw new Error(error.message);
+  revalidatePath("/dashboard");
+  redirect("/dashboard");
 }
 
 export async function snoozeReminders(id: string, days: number) {

@@ -161,6 +161,55 @@ Same trick for dates: "when were you last charged?" is easier to find than "when
 it renew" — we compute the next renewal from last-charge + cycle, and mark the
 confidence accordingly.
 
+### Discovery integrations: what OAuth can and cannot unlock
+
+Brainstormed Aug 2026. "Connect an account to find your subscriptions" splits into
+real options, dead ends, and no-OAuth moves that beat most OAuth:
+
+**Real options**
+
+- **Open Banking (UK) — the V2 flagship.** AIS consent via a provider (GoCardless
+  Bank Account Data, TrueLayer, Plaid UK): user approves in their banking app, we
+  pull ~90 days of transactions and run recurring-detection — finds everything paid
+  by card or direct debit. GoCardless BAD has a free tier at our scale and acts as
+  the licensed AISP. SCA forces re-consent every ~90 days — treat each re-consent as
+  a built-in "review your subscriptions" moment. TODO before building: confirm
+  whether we need FCA agent status or ride the provider's licence.
+- **Email-scan OAuth — high magic, heavy toll.** Gmail read scopes are *restricted*:
+  app verification plus an annual paid third-party security assessment (CASA).
+  Microsoft's review for Outlook Mail.Read is meaningfully lighter. Verdict: not
+  before revenue; Outlook first if ever.
+
+**Dead ends (named so we stop considering them)**
+
+- Sign in with Apple/Google as pure login exposes zero purchase data.
+- There is **no third-party API** for App Store or Google Play subscriptions — that
+  data is only visible on-device, which is exactly why the guided audit points
+  people at the Settings pages.
+- PayPal and Amazon logins expose profile only; no recurring-payments listing.
+- Merchant-side OAuth (Netflix etc.) does not exist.
+
+**No-OAuth moves that beat most OAuth**
+
+- **Screenshot import (V1.5, best effort-to-value).** The guided audit already sends
+  people to the iOS Subscriptions page / bank direct-debit list / PayPal automatic
+  payments — add "screenshot it": on-device OCR (Tesseract WASM in the browser) plus
+  catalog-aware heuristics extract services, amounts, and dates and pre-fill a
+  confirm list. Decision: **no LLM dependency** — the app must work without any paid
+  API subscription, and on-device keeps the images fully private. LLM extraction
+  could return later as an optional quality upgrade behind a paid tier, never as a
+  requirement.
+- **Email auto-forwarding.** Per-user inbound address + a one-time Gmail filter
+  ("billing/receipt → forward") gives *ongoing* detection of new subscriptions with
+  zero Google verification. Resend supports inbound parsing.
+- **Bank CSV upload** (already planned): same-merchant + similar-amount +
+  regular-spacing detection. The unglamorous reliable baseline.
+
+**Ladder:** 1) V1.5 screenshot/PDF import + CSV import. 2) V2 Open Banking via
+GoCardless BAD. 3) Google/Apple as *sign-in* options for signup friction only —
+trivial in Supabase Auth, discovers nothing. 4) Gmail-scope scanning deferred
+indefinitely; forwarding delivers most of its value free.
+
 ### What we take from prior art (concrete steals)
 
 - **Rocket Money**: list *and* calendar view of upcoming charges (our cash-flow view +

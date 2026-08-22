@@ -1,0 +1,232 @@
+"use client";
+
+import { useRef, useState } from "react";
+import { detectRecurring, parseCsv } from "@/lib/importDetect";
+import { extractFromText } from "@/lib/ocrExtract";
+import type { ImportSuggestion } from "@/lib/importTypes";
+import { findService } from "@/lib/catalog";
+import { ServiceLogo } from "./ServiceLogo";
+
+export function ImportFlow({
+  addBulk,
+}: {
+  addBulk: (rows: ImportSuggestion[]) => Promise<void>;
+}) {
+  const [suggestions, setSuggestions] = useState<ImportSuggestion[] | null>(null);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const shotInput = useRef<HTMLInputElement>(null);
+  const csvInput = useRef<HTMLInputElement>(null);
+
+  function showSuggestions(list: ImportSuggestion[]) {
+    setSuggestions(list);
+    setSelected(new Set(list.map((_, i) => i)));
+    setError(
+      list.length === 0
+        ? "Nothing recognisable found — try a clearer screenshot or a different file."
+        : null
+    );
+  }
+
+  async function handleScreenshots(files: FileList) {
+    setBusy(true);
+    setError(null);
+    setProgress("Loading OCR engine…");
+    try {
+      // OCR runs entirely in the browser (WASM) — screenshots never upload.
+      const { createWorker } = await import("tesseract.js");
+      const worker = await createWorker("eng");
+      try {
+        const all: ImportSuggestion[] = [];
+        const list = [...files].slice(0, 6);
+        for (let i = 0; i < list.length; i++) {
+          setProgress(`Reading image ${i + 1} of ${list.length}…`);
+          const { data } = await worker.recognize(list[i]);
+          all.push(...extractFromText(data.text));
+        }
+        // Dedupe across images by catalog id / name
+        const seen = new Map<string, ImportSuggestion>();
+        for (const s of all) {
+          const key = s.catalog_id ?? s.name.toLowerCase();
+          if (!seen.has(key)) seen.set(key, s);
+        }
+        showSuggestions([...seen.values()]);
+      } finally {
+        await worker.terminate();
+      }
+    } catch {
+      setError(
+        "Couldn't read those images — try sharper screenshots (crop to the list if you can)."
+      );
+    } finally {
+      setBusy(false);
+      setProgress(null);
+    }
+  }
+
+  async function handleCsv(file: File) {
+    setBusy(true);
+    setError(null);
+    try {
+      const text = await file.text();
+      showSuggestions(detectRecurring(parseCsv(text)));
+    } catch {
+      setError("Couldn't read that CSV.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function addSelected() {
+    if (!suggestions) return;
+    const rows = suggestions.filter((_, i) => selected.has(i));
+    if (rows.length === 0) return;
+    setBusy(true);
+    try {
+      await addBulk(rows);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (suggestions) {
+    return (
+      <>
+        <button
+          className="btn-small"
+          onClick={() => {
+            setSuggestions(null);
+            setError(null);
+          }}
+        >
+          ← start over
+        </button>
+        <h1 style={{ fontSize: "1.3rem" }}>
+          Found {suggestions.length} subscription
+          {suggestions.length === 1 ? "" : "s"}
+        </h1>
+        {error && <p className="muted">{error}</p>}
+        <div className="sub-list">
+          {suggestions.map((s, i) => {
+            const service = s.catalog_id ? findService(s.catalog_id) : undefined;
+            return (
+              <label className="sub-row" key={i} style={{ cursor: "pointer" }}>
+                <input
+                  type="checkbox"
+                  style={{ width: "auto" }}
+                  checked={selected.has(i)}
+                  onChange={(e) => {
+                    const next = new Set(selected);
+                    if (e.target.checked) next.add(i);
+                    else next.delete(i);
+                    setSelected(next);
+                  }}
+                />
+                <ServiceLogo
+                  name={s.name}
+                  domain={service?.domain}
+                  size={26}
+                />
+                <div>
+                  <div className="name">
+                    {s.name}
+                    {s.plan_label && (
+                      <span className="meta"> · {s.plan_label}</span>
+                    )}
+                  </div>
+                  <div className="meta">
+                    {s.price != null ? `£${s.price.toFixed(2)}` : "price unknown"}
+                    {s.cycle ? ` / ${s.cycle}` : ""}
+                    {s.next_renewal_date
+                      ? ` · next ${s.next_renewal_date}`
+                      : s.last_charged
+                        ? ` · last charged ${s.last_charged}`
+                        : ""}
+                  </div>
+                </div>
+                <span className="spacer" />
+                {service && <span className="badge">{service.name}</span>}
+              </label>
+            );
+          })}
+        </div>
+        {suggestions.length > 0 && (
+          <button
+            className="btn-primary"
+            style={{ marginTop: "1rem" }}
+            disabled={busy || selected.size === 0}
+            onClick={addSelected}
+          >
+            {busy ? "Adding…" : `Add ${selected.size} selected`}
+          </button>
+        )}
+        <p className="muted">
+          Everything lands as &quot;review&quot; intent with approximate dates —
+          fine-tune from the dashboard.
+        </p>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <h1 style={{ fontSize: "1.3rem" }}>Import your subscriptions</h1>
+      <p className="muted" style={{ maxWidth: "40rem", lineHeight: 1.6 }}>
+        Don&apos;t know what you&apos;re subscribed to? The lists already exist —
+        we&apos;ll read them for you.
+      </p>
+
+      <div className="card" style={{ marginBottom: "1rem" }}>
+        <h2 style={{ marginTop: 0, fontSize: "1rem" }}>📸 Screenshots</h2>
+        <p className="muted" style={{ lineHeight: 1.6 }}>
+          Screenshot the places your subscriptions are listed (up to 6 at
+          once): iPhone <b>Settings → your name → Subscriptions</b>, Google
+          Play <b>Payments &amp; subscriptions</b>, your bank app&apos;s{" "}
+          <b>Direct Debits</b>, or PayPal <b>Automatic payments</b>. Reading
+          happens on your device — the images never leave your browser.
+        </p>
+        <input
+          ref={shotInput}
+          type="file"
+          accept="image/*"
+          multiple
+          hidden
+          onChange={(e) => e.target.files?.length && handleScreenshots(e.target.files)}
+        />
+        <button
+          className="btn-primary"
+          disabled={busy}
+          onClick={() => shotInput.current?.click()}
+        >
+          {busy ? (progress ?? "Reading…") : "Choose screenshots"}
+        </button>
+      </div>
+
+      <div className="card" style={{ marginBottom: "1rem" }}>
+        <h2 style={{ marginTop: 0, fontSize: "1rem" }}>🏦 Bank statement CSV</h2>
+        <p className="muted" style={{ lineHeight: 1.6 }}>
+          Export a CSV from your bank (3+ months works best) and we&apos;ll
+          detect the recurring payments. The file is analysed in your browser
+          and never uploaded.
+        </p>
+        <input
+          ref={csvInput}
+          type="file"
+          accept=".csv,text/csv"
+          hidden
+          onChange={(e) => e.target.files?.[0] && handleCsv(e.target.files[0])}
+        />
+        <button
+          disabled={busy}
+          onClick={() => csvInput.current?.click()}
+        >
+          {busy ? "Analysing…" : "Choose CSV"}
+        </button>
+      </div>
+
+      {error && <p style={{ color: "var(--danger)" }}>{error}</p>}
+    </>
+  );
+}
