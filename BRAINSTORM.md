@@ -23,11 +23,15 @@ Surveyed 2026-08-22 via GitHub search:
 **The gap all of them share:** they are *expense trackers* first. They tell you what you
 spend and when the next payment lands. None of them are built around **intent** — "I took
 this for one month and I want out before it renews", "my broadband contract ends in March
-and the price will jump", "the gym needs 30 days' written notice". That intent-and-deadline
-layer is the product. Spend analytics is a by-product we get for free.
+and the price will jump", "the gym needs 30 days' written notice".
 
-**Positioning:** *a cancellation copilot that happens to also show you your total spend*,
-rather than another spend dashboard with a reminder bolted on.
+**Positioning: two pillars, one data model.** We do both — a full expense view *and* the
+intent/deadline layer — because they need the same inputs (price, cycle, renewal date)
+and each makes the other better (see §7). Expense tracking is table stakes: Wallos proves
+the demand and sets the bar, so we must clear it. Intent is the differentiator: it's what
+none of the incumbents do, so it leads the UX. The home screen answers "what needs my
+action?" first and "what am I spending?" second — a dashboard you *act from*, not one you
+admire.
 
 ## 2. Data sources for the service catalog
 
@@ -77,11 +81,12 @@ Subscription
 ├─ friction:   notice_period_days (0 for streaming, 30 for most gyms),
 │              cancel_method (in-app | website | phone | letter!), cancel_url
 ├─ meta:       payment method, shared-with/household, notes
+├─ history:    price_history[] (kept automatically on every price edit — fuels §7)
 └─ state:      active | cancelled(effective_date) | paused | expired
 ```
 
 Derived, never stored: monthly-equivalent cost (annuals ÷ 12), total annual spend,
-`action_deadline`, "renewing in N days".
+lifetime spend, `action_deadline`, "renewing in N days".
 
 ## 4. Onboarding — get to value in under two minutes
 
@@ -157,7 +162,36 @@ Design principles:
 - **Learn from behaviour** (V2): repeatedly dismissing heads-ups for a service mutes that
   type for it; a "cancelled" outcome after a review nudge tightens future defaults.
 
-## 7. Platform: how "native" to go
+## 7. The expense pillar
+
+Everything here falls out of data the intent flow already collects — no extra onboarding
+burden, which is why doing both is cheap:
+
+- **Totals that don't lie:** per-month and per-year, with annuals/quarterlies normalised
+  to effective monthly cost so a £95 Prime renewal isn't invisible for 11 months.
+  Category breakdown (streaming vs household vs fitness).
+- **Cash-flow calendar:** what's leaving the account in the next 30 days, day by day —
+  the "why is this month expensive?" view. Falls out of the same schedule that drives
+  reminders (and the ICS feed doubles as this on your real calendar).
+- **Price history per subscription:** every time the user edits a price, keep the old one
+  (`price_history[]`). Enables "Netflix has raised this plan 3 times since you joined,
+  +40% total" — strong fuel for the review nudge.
+- **Lifetime spend per service:** "you've paid Audible £287 since 2023" is the single most
+  motivating stat for a cancel decision.
+- **Saved-by-cancelling tally:** every confirmed cancellation banks its monthly cost into
+  a running "you're saving £34/mo" counter. This is the bridge stat between the two
+  pillars — expense data measuring the intent feature's win.
+
+Where the pillars reinforce each other: the review nudge quotes cost ("still worth
+£12.99? You've watched nothing flagged this one — you've spent £78 in 6 months"); the
+expense view sorts by cost to surface cancellation candidates; the savings tally keeps
+people coming back to the app that just told them to leave other apps.
+
+The guardrail: budgets, spending goals, bank reconciliation, and general personal-finance
+features stay out — that's Firefly/Actual territory. If a feature needs data that isn't a
+subscription, it doesn't belong here.
+
+## 8. Platform: how "native" to go
 
 | Option | Reach | Reminder reliability | Effort |
 |---|---|---|---|
@@ -183,16 +217,17 @@ SQLite/Postgres, a daily reminder-scheduler job, web push + email (Resend/Postma
 ICS endpoint. Self-hostable via Docker from day one — that's the audience that adopted
 Wallos and subtrackr.
 
-## 8. Roadmap sketch
+## 9. Roadmap sketch
 
 - **V1:** picker onboarding + seed catalog, manual subscriptions, intent field, typed
-  reminders (push/email/ICS), dashboard with monthly/annual totals, confirm-cancel loop.
+  reminders (push/email/ICS), expense dashboard (monthly/annual totals, category
+  breakdown, cash-flow calendar), confirm-cancel loop with savings tally.
 - **V2:** bank-CSV import with recurring detection, bundles, household sharing/splitting,
-  reminder-behaviour learning, price-change history ("Netflix has raised this plan twice").
+  reminder-behaviour learning, price history + lifetime spend per service.
 - **V3:** email receipt parsing, Open Banking sync, "how to cancel" playbooks per service,
   community catalog contributions.
 
-## 9. Open questions
+## 10. Open questions
 
 1. Single-user self-hosted first (Wallos audience) or hosted multi-tenant from day one?
 2. GBP/UK-centric catalog first (Now TV, PureGym, BT…) with region packs later — acceptable?
