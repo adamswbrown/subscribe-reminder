@@ -109,18 +109,17 @@ export function SubRow({
             </button>
           </form>
         )}
-        {sub.intent !== "keep" &&
-          (snoozed ? (
-            <span className="deadline" title="Reminders snoozed">
-              💤 until {sub.reminders_snoozed_until}
-            </span>
-          ) : (
-            <form action={snooze}>
-              <button className="btn-small" title="Silence reminders for 3 days">
-                snooze 3d
-              </button>
-            </form>
-          ))}
+        {snoozed ? (
+          <span className="deadline" title="Reminders snoozed">
+            💤 until {sub.reminders_snoozed_until}
+          </span>
+        ) : (
+          <form action={snooze}>
+            <button className="btn-small" title="Silence reminders for 3 days">
+              snooze 3d
+            </button>
+          </form>
+        )}
         <Link className="btn btn-small" href={`/dashboard/edit/${sub.id}`}>
           edit
         </Link>

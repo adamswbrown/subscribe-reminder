@@ -2,7 +2,7 @@
 // Pure functions — the CSV never leaves the browser.
 
 import { CATALOG } from "./catalog";
-import type { ImportSuggestion } from "./importTypes";
+import { CYCLE_DAYS, type ImportSuggestion } from "./importTypes";
 
 interface Txn {
   date: Date;
@@ -59,9 +59,12 @@ function parseDate(s: string): Date | null {
     const year = +m[3] < 100 ? 2000 + +m[3] : +m[3];
     return new Date(Date.UTC(year, +m[2] - 1, +m[1]));
   }
-  // 22 Aug 2026
+  // 22 Aug 2026 — new Date() parses in local time; normalise the calendar
+  // date to UTC midnight so later toISOString() can't shift it a day.
   const d = new Date(t);
-  return isNaN(d.getTime()) ? null : d;
+  return isNaN(d.getTime())
+    ? null
+    : new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
 }
 
 function parseAmount(s: string): number | null {
@@ -134,12 +137,16 @@ export function extractTransactions(rows: string[][]): Txn[] {
       bestDateScore = dates;
       dateCol = c;
     }
-    if (amounts > bestAmountScore) {
-      // Prefer a "money out"/debit column when the header hints at it
+    {
+      // Prefer a "money out"/debit column; penalise credit/incoming columns
+      // so "Paid In" never beats "Paid Out".
       const header = (rows[0][c] ?? "").toLowerCase();
-      const bonus = /out|debit|paid/.test(header) ? 5 : 0;
-      if (amounts + bonus > bestAmountScore) {
-        bestAmountScore = amounts + bonus;
+      let bonus = 0;
+      if (/\b(out|debit|withdrawal)s?\b/.test(header)) bonus += 5;
+      if (/\b(in|credit|deposit)s?\b/.test(header)) bonus -= 5;
+      const score = amounts + bonus;
+      if (amounts > 0 && score > bestAmountScore) {
+        bestAmountScore = score;
         amountCol = c;
       }
     }
@@ -163,10 +170,10 @@ export function extractTransactions(rows: string[][]): Txn[] {
 }
 
 const CYCLES: Array<{ cycle: ImportSuggestion["cycle"]; min: number; max: number; days: number }> = [
-  { cycle: "weekly", min: 5, max: 9, days: 7 },
-  { cycle: "monthly", min: 26, max: 35, days: 30 },
-  { cycle: "quarterly", min: 84, max: 98, days: 91 },
-  { cycle: "yearly", min: 345, max: 385, days: 365 },
+  { cycle: "weekly", min: 5, max: 9, days: CYCLE_DAYS.weekly },
+  { cycle: "monthly", min: 26, max: 35, days: CYCLE_DAYS.monthly },
+  { cycle: "quarterly", min: 84, max: 98, days: CYCLE_DAYS.quarterly },
+  { cycle: "yearly", min: 345, max: 385, days: CYCLE_DAYS.yearly },
 ];
 
 export function detectRecurring(rows: string[][]): ImportSuggestion[] {

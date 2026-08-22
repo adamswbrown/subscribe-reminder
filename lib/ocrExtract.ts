@@ -85,9 +85,9 @@ function looksLikeName(line: string): boolean {
   return letters / line.length > 0.6;
 }
 
-function firstWordKey(name: string): string {
+function firstWordKey(name: string): string | null {
   const w = name.replace(/[^A-Za-z0-9 ]/g, " ").trim().split(/\s+/)[0] ?? "";
-  return w.length >= 4 ? w.toLowerCase() : "";
+  return w.length >= 4 ? w.toLowerCase() : null;
 }
 
 const PLAN_HINT = /membership|premium|pro\b|plan|yearly|monthly|annual|\(/i;
@@ -149,7 +149,8 @@ export function extractFromText(text: string): ImportSuggestion[] {
   const merged: ImportSuggestion[] = [];
   const byKey = new Map<string, ImportSuggestion>();
   for (const s of results) {
-    const key = s.catalog_id ?? firstWordKey(s.name) ?? s.name.toLowerCase();
+    const key =
+      s.catalog_id ?? firstWordKey(s.name) ?? `full:${s.name.toLowerCase()}`;
     const existing = byKey.get(key);
     // Two rows for the same service with different prices are genuinely
     // separate subscriptions (e.g. two NOW memberships) — keep both.

@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { detectRecurring, parseCsv } from "@/lib/importDetect";
 import { extractFromText } from "@/lib/ocrExtract";
 import type { ImportSuggestion } from "@/lib/importTypes";
@@ -12,6 +13,7 @@ export function ImportFlow({
 }: {
   addBulk: (rows: ImportSuggestion[]) => Promise<void>;
 }) {
+  const router = useRouter();
   const [suggestions, setSuggestions] = useState<ImportSuggestion[] | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [busy, setBusy] = useState(false);
@@ -137,7 +139,9 @@ export function ImportFlow({
     setBusy(true);
     try {
       await addBulk(rows);
-    } finally {
+      router.push("/dashboard");
+    } catch {
+      setError("Couldn't save those subscriptions — try again.");
       setBusy(false);
     }
   }

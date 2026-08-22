@@ -2,7 +2,11 @@ import { headers } from "next/headers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { originFromHeaders } from "@/lib/origin";
 import { PushToggle } from "@/components/PushToggle";
-import { savePushSubscription, removePushSubscription } from "../actions";
+import {
+  savePushSubscription,
+  removePushSubscription,
+  hasPushSubscription,
+} from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -49,7 +53,11 @@ export default async function SettingsPage() {
           Get cancel-deadline and renewal reminders as notifications on this
           device, alongside email.
         </p>
-        <PushToggle save={savePushSubscription} remove={removePushSubscription} />
+        <PushToggle
+          save={savePushSubscription}
+          remove={removePushSubscription}
+          isMine={hasPushSubscription}
+        />
       </div>
 
       <div className="card" style={{ marginBottom: "1rem" }}>
