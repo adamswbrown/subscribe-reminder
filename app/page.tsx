@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <main
@@ -13,13 +15,14 @@ export default function Home() {
       }}
     >
       <h1 style={{ fontSize: "2.25rem", margin: 0 }}>subscribe-reminder</h1>
-      <p style={{ maxWidth: "34rem", lineHeight: 1.6, color: "#a8adb5" }}>
+      <p style={{ maxWidth: "34rem", lineHeight: 1.6, color: "var(--text-dim)" }}>
         Track your subscriptions — streaming, gyms, broadband, news — and get
-        reminded in time to actually cancel or renegotiate. Coming soon.
+        reminded in time to actually cancel or renegotiate. Took something for
+        a month? We&apos;ll make sure it stays a month.
       </p>
-      <p style={{ fontSize: "0.85rem", color: "#6b7280" }}>
-        Deployment pipeline: live ✓
-      </p>
+      <Link href="/login" className="btn btn-primary">
+        Get started
+      </Link>
     </main>
   );
 }
