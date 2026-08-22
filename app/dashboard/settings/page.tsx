@@ -1,6 +1,8 @@
 import { headers } from "next/headers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { originFromHeaders } from "@/lib/origin";
+import { PushToggle } from "@/components/PushToggle";
+import { savePushSubscription, removePushSubscription } from "../actions";
 
 export const dynamic = "force-dynamic";
 
@@ -39,6 +41,15 @@ export default async function SettingsPage() {
             Feed not ready yet — sign out and back in if this persists.
           </p>
         )}
+      </div>
+
+      <div className="card" style={{ marginBottom: "1rem" }}>
+        <h2 style={{ marginTop: 0, fontSize: "1rem" }}>Push notifications</h2>
+        <p className="muted" style={{ lineHeight: 1.6 }}>
+          Get cancel-deadline and renewal reminders as notifications on this
+          device, alongside email.
+        </p>
+        <PushToggle save={savePushSubscription} remove={removePushSubscription} />
       </div>
 
       <div className="card" style={{ marginBottom: "1rem" }}>

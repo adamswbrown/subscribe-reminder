@@ -1,13 +1,22 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import webpush from "web-push";
 
 interface DueReminder {
   id: number;
+  user_id: string;
   email: string;
   sub_name: string;
   kind: string;
   event_date: string;
   price: number;
   notice_period_days: number;
+}
+
+interface PushTarget {
+  user_id: string;
+  endpoint: string;
+  p256dh: string;
+  auth: string;
 }
 
 const HOUR = 60 * 60 * 1000;
@@ -39,7 +48,7 @@ function body(r: DueReminder): string {
       `This service needs ${r.notice_period_days} days' notice, so today is about acting, not the renewal date.`
     );
   }
-  lines.push("", "Open your dashboard to act:", appUrl());
+  lines.push("", "Open your dashboard to act or snooze:", appUrl());
   return lines.join("\n");
 }
 
@@ -75,6 +84,73 @@ async function sendEmail(to: string, subj: string, text: string) {
   return true;
 }
 
+async function sendPushes(
+  supabase: SupabaseClient,
+  secret: string,
+  due: DueReminder[]
+) {
+  const pub = process.env.VAPID_PUBLIC_KEY;
+  const priv = process.env.VAPID_PRIVATE_KEY;
+  if (!pub || !priv || due.length === 0) return;
+  webpush.setVapidDetails(
+    process.env.VAPID_SUBJECT ?? "mailto:reminders@gcgyms.com",
+    pub,
+    priv
+  );
+
+  const userIds = [...new Set(due.map((r) => r.user_id))];
+  const { data, error } = await supabase.rpc("get_push_subscriptions", {
+    p_secret: secret,
+    p_user_ids: userIds,
+  });
+  if (error) {
+    console.error("[scheduler] get_push_subscriptions failed:", error.message);
+    return;
+  }
+  const targets = (data ?? []) as PushTarget[];
+  if (targets.length === 0) return;
+
+  const byUser = new Map<string, PushTarget[]>();
+  for (const t of targets) {
+    const list = byUser.get(t.user_id) ?? [];
+    list.push(t);
+    byUser.set(t.user_id, list);
+  }
+
+  let sent = 0;
+  for (const r of due) {
+    for (const t of byUser.get(r.user_id) ?? []) {
+      try {
+        await webpush.sendNotification(
+          {
+            endpoint: t.endpoint,
+            keys: { p256dh: t.p256dh, auth: t.auth },
+          },
+          JSON.stringify({ title: subject(r), url: appUrl() })
+        );
+        sent++;
+      } catch (err) {
+        const status = (err as { statusCode?: number }).statusCode;
+        if (status === 404 || status === 410) {
+          await supabase.rpc("delete_push_subscription", {
+            p_secret: secret,
+            p_endpoint: t.endpoint,
+          });
+          byUser.set(
+            t.user_id,
+            (byUser.get(t.user_id) ?? []).filter(
+              (x) => x.endpoint !== t.endpoint
+            )
+          );
+        } else {
+          console.error("[scheduler] push send failed:", status ?? err);
+        }
+      }
+    }
+  }
+  if (sent > 0) console.log(`[scheduler] sent ${sent} push notification(s)`);
+}
+
 async function tick() {
   if (running) return;
   running = true;
@@ -103,6 +179,7 @@ async function tick() {
     }
 
     const due = (data ?? []) as DueReminder[];
+    await sendPushes(supabase, secret, due);
     const sentIds: number[] = [];
     for (const r of due) {
       const ok = await sendEmail(r.email, subject(r), body(r));

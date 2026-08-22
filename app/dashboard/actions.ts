@@ -117,6 +117,48 @@ export async function reactivate(id: string) {
   revalidatePath("/dashboard");
 }
 
+export async function snoozeReminders(id: string, days: number) {
+  const supabase = await createSupabaseServerClient();
+  const [y, m, d] = todayISO().split("-").map(Number);
+  const until = new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+  const { error } = await supabase
+    .from("subscriptions")
+    .update({ reminders_snoozed_until: until })
+    .eq("id", id);
+  if (error) throw new Error(error.message);
+  revalidatePath("/dashboard");
+}
+
+export async function savePushSubscription(sub: {
+  endpoint: string;
+  keys: { p256dh: string; auth: string };
+}) {
+  const supabase = await createSupabaseServerClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+  const { error } = await supabase.from("push_subscriptions").upsert(
+    {
+      user_id: user.id,
+      endpoint: sub.endpoint,
+      p256dh: sub.keys.p256dh,
+      auth: sub.keys.auth,
+    },
+    { onConflict: "endpoint" }
+  );
+  if (error) throw new Error(error.message);
+}
+
+export async function removePushSubscription(endpoint: string) {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase
+    .from("push_subscriptions")
+    .delete()
+    .eq("endpoint", endpoint);
+  if (error) throw new Error(error.message);
+}
+
 export async function deleteSubscription(id: string) {
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.from("subscriptions").delete().eq("id", id);

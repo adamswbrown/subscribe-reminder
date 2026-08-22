@@ -2,7 +2,11 @@ import Link from "next/link";
 import type { Subscription } from "@/lib/types";
 import { formatMoney, cycleLabel, daysUntil } from "@/lib/money";
 import { findService } from "@/lib/catalog";
-import { setIntent, markCancelled } from "@/app/dashboard/actions";
+import {
+  setIntent,
+  markCancelled,
+  snoozeReminders,
+} from "@/app/dashboard/actions";
 import { ServiceLogo } from "./ServiceLogo";
 
 function DeadlineChip({ sub }: { sub: Subscription }) {
@@ -34,6 +38,9 @@ export function SubRow({ sub }: { sub: Subscription }) {
   const setCancel = setIntent.bind(null, sub.id, "cancel");
   const setReview = setIntent.bind(null, sub.id, "review");
   const cancelled = markCancelled.bind(null, sub.id);
+  const snooze = snoozeReminders.bind(null, sub.id, 3);
+  const snoozed =
+    sub.reminders_snoozed_until && daysUntil(sub.reminders_snoozed_until) > 0;
 
   const domain = sub.catalog_id ? findService(sub.catalog_id)?.domain : undefined;
 
@@ -93,6 +100,18 @@ export function SubRow({ sub }: { sub: Subscription }) {
             </button>
           </form>
         )}
+        {sub.intent !== "keep" &&
+          (snoozed ? (
+            <span className="deadline" title="Reminders snoozed">
+              💤 until {sub.reminders_snoozed_until}
+            </span>
+          ) : (
+            <form action={snooze}>
+              <button className="btn-small" title="Silence reminders for 3 days">
+                snooze 3d
+              </button>
+            </form>
+          ))}
         <Link className="btn btn-small" href={`/dashboard/edit/${sub.id}`}>
           edit
         </Link>

@@ -31,6 +31,7 @@ export interface Subscription {
   state: SubState;
   cancelled_effective: string | null;
   paused_until: string | null;
+  reminders_snoozed_until: string | null;
   created_at: string;
   updated_at: string;
 }
