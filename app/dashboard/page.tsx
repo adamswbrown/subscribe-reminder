@@ -59,9 +59,16 @@ export default async function Dashboard() {
             Pick from common services — Netflix, Spotify, your gym, your
             broadband — and we&apos;ll keep an eye on the dates that matter.
           </p>
-          <Link href="/dashboard/add" className="btn btn-primary">
-            Add your first subscription
-          </Link>
+          <div
+            style={{ display: "flex", gap: "0.6rem", justifyContent: "center" }}
+          >
+            <Link href="/dashboard/add" className="btn btn-primary">
+              Add your first subscription
+            </Link>
+            <Link href="/dashboard/import" className="btn">
+              Import from screenshots or CSV
+            </Link>
+          </div>
         </div>
       </main>
     );
