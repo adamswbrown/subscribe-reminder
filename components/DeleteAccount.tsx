@@ -5,6 +5,7 @@ import { useState } from "react";
 export function DeleteAccount({ action }: { action: () => Promise<void> }) {
   const [arming, setArming] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   if (!arming) {
     return (
@@ -27,9 +28,13 @@ export function DeleteAccount({ action }: { action: () => Promise<void> }) {
         disabled={busy}
         onClick={async () => {
           setBusy(true);
+          setError(null);
           try {
             await action();
           } catch {
+            setError(
+              "Deleting your account failed — nothing was removed. Try again."
+            );
             setBusy(false);
           }
         }}
@@ -39,6 +44,7 @@ export function DeleteAccount({ action }: { action: () => Promise<void> }) {
       <button className="btn-small" disabled={busy} onClick={() => setArming(false)}>
         Keep my account
       </button>
+      {error && <span style={{ color: "var(--danger)" }}>{error}</span>}
     </div>
   );
 }

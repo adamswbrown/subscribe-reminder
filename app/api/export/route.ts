@@ -10,20 +10,32 @@ const CSV_COLUMNS = [
   "price",
   "currency",
   "cycle",
+  "cycle_custom_days",
   "next_renewal_date",
+  "renewal_confidence",
   "intent",
   "state",
   "notice_period_days",
   "action_deadline",
+  "trial_end_date",
+  "contract_end_date",
+  "intro_price",
+  "intro_ends",
+  "seats",
+  "payment_method",
+  "shared_with",
   "cancel_method",
   "cancel_url",
+  "cancelled_effective",
   "notes",
 ] as const;
 
 function csvCell(v: unknown): string {
   if (v === null || v === undefined) return "";
-  const s = String(v);
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  let s = String(v);
+  // Leading =, +, -, @ would execute as a formula in Excel/Sheets.
+  if (/^[=+\-@]/.test(s)) s = "'" + s;
+  return /[",\r\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 
 export async function GET(req: NextRequest) {

@@ -50,6 +50,11 @@ export function todayISO(): string {
   }).format(new Date());
 }
 
+export function addDaysISO(days: number): string {
+  const [y, m, d] = todayISO().split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
+}
+
 export function daysUntil(dateStr: string): number {
   const today = Date.parse(todayISO() + "T00:00:00Z");
   const target = Date.parse(dateStr + "T00:00:00Z");

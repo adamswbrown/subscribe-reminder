@@ -3,7 +3,9 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { todayISO } from "@/lib/money";
+import { headers } from "next/headers";
+import { todayISO, addDaysISO } from "@/lib/money";
+import { originFromHeaders } from "@/lib/origin";
 import { findService } from "@/lib/catalog";
 import { CYCLE_DAYS, type ImportSuggestion } from "@/lib/importTypes";
 
@@ -181,11 +183,9 @@ export async function hasPushSubscription(endpoint: string): Promise<boolean> {
 
 export async function snoozeReminders(id: string, days: number) {
   const supabase = await createSupabaseServerClient();
-  const [y, m, d] = todayISO().split("-").map(Number);
-  const until = new Date(Date.UTC(y, m - 1, d + days)).toISOString().slice(0, 10);
   const { error } = await supabase
     .from("subscriptions")
-    .update({ reminders_snoozed_until: until })
+    .update({ reminders_snoozed_until: addDaysISO(days) })
     .eq("id", id);
   if (error) throw new Error(error.message);
   revalidatePath("/dashboard");
@@ -230,7 +230,20 @@ export type BulkAction =
   | "reactivate"
   | "delete";
 
+const BULK_ACTIONS: readonly BulkAction[] = [
+  "keep",
+  "cancel",
+  "review",
+  "snooze",
+  "mark_cancelled",
+  "reactivate",
+  "delete",
+];
+
 export async function bulkAction(ids: string[], action: BulkAction) {
+  // Server actions are network-callable; reject anything off the menu
+  // before it reaches the database.
+  if (!BULK_ACTIONS.includes(action)) throw new Error("unknown bulk action");
   if (ids.length === 0) return;
   const supabase = await createSupabaseServerClient();
   // RLS scopes every statement to the caller's own rows.
@@ -240,18 +253,19 @@ export async function bulkAction(ids: string[], action: BulkAction) {
   if (action === "delete") {
     ({ error } = await targets.delete().in("id", ids));
   } else if (action === "mark_cancelled") {
+    // Only active rows: re-cancelling an already-cancelled subscription
+    // must not overwrite its original cancellation date.
     ({ error } = await targets
       .update({ state: "cancelled", cancelled_effective: todayISO() })
-      .in("id", ids));
+      .in("id", ids)
+      .eq("state", "active"));
   } else if (action === "reactivate") {
     ({ error } = await targets
       .update({ state: "active", cancelled_effective: null })
       .in("id", ids));
   } else if (action === "snooze") {
-    const [y, m, d] = todayISO().split("-").map(Number);
-    const until = new Date(Date.UTC(y, m - 1, d + 3)).toISOString().slice(0, 10);
     ({ error } = await targets
-      .update({ reminders_snoozed_until: until })
+      .update({ reminders_snoozed_until: addDaysISO(3) })
       .in("id", ids));
   } else {
     ({ error } = await targets.update({ intent: action }).in("id", ids));
@@ -266,7 +280,11 @@ export async function changeEmail(form: FormData) {
     redirect("/dashboard/settings?email_error=1");
   }
   const supabase = await createSupabaseServerClient();
-  const { error } = await supabase.auth.updateUser({ email });
+  const origin = originFromHeaders(await headers());
+  const { error } = await supabase.auth.updateUser(
+    { email },
+    origin ? { emailRedirectTo: `${origin}/auth/callback` } : undefined
+  );
   if (error) redirect("/dashboard/settings?email_error=1");
   redirect("/dashboard/settings?email_sent=1");
 }
