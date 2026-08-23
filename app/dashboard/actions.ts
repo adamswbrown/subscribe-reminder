@@ -221,6 +221,64 @@ export async function removePushSubscription(endpoint: string) {
   if (error) throw new Error(error.message);
 }
 
+export type BulkAction =
+  | "keep"
+  | "cancel"
+  | "review"
+  | "snooze"
+  | "mark_cancelled"
+  | "reactivate"
+  | "delete";
+
+export async function bulkAction(ids: string[], action: BulkAction) {
+  if (ids.length === 0) return;
+  const supabase = await createSupabaseServerClient();
+  // RLS scopes every statement to the caller's own rows.
+  const targets = supabase.from("subscriptions");
+  let error: { message: string } | null = null;
+
+  if (action === "delete") {
+    ({ error } = await targets.delete().in("id", ids));
+  } else if (action === "mark_cancelled") {
+    ({ error } = await targets
+      .update({ state: "cancelled", cancelled_effective: todayISO() })
+      .in("id", ids));
+  } else if (action === "reactivate") {
+    ({ error } = await targets
+      .update({ state: "active", cancelled_effective: null })
+      .in("id", ids));
+  } else if (action === "snooze") {
+    const [y, m, d] = todayISO().split("-").map(Number);
+    const until = new Date(Date.UTC(y, m - 1, d + 3)).toISOString().slice(0, 10);
+    ({ error } = await targets
+      .update({ reminders_snoozed_until: until })
+      .in("id", ids));
+  } else {
+    ({ error } = await targets.update({ intent: action }).in("id", ids));
+  }
+  if (error) throw new Error(error.message);
+  revalidatePath("/dashboard");
+}
+
+export async function changeEmail(form: FormData) {
+  const email = str(form, "email");
+  if (!email || !email.includes("@")) {
+    redirect("/dashboard/settings?email_error=1");
+  }
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.updateUser({ email });
+  if (error) redirect("/dashboard/settings?email_error=1");
+  redirect("/dashboard/settings?email_sent=1");
+}
+
+export async function deleteAccount() {
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.rpc("delete_account");
+  if (error) throw new Error(error.message);
+  await supabase.auth.signOut();
+  redirect("/login?account_deleted=1");
+}
+
 export async function deleteSubscription(id: string) {
   const supabase = await createSupabaseServerClient();
   const { error } = await supabase.from("subscriptions").delete().eq("id", id);

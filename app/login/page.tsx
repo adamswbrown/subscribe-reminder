@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { createSupabaseBrowserClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
@@ -8,6 +8,13 @@ export default function LoginPage() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [deleted, setDeleted] = useState(false);
+
+  useEffect(() => {
+    setDeleted(
+      new URLSearchParams(window.location.search).has("account_deleted")
+    );
+  }, []);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -40,6 +47,11 @@ export default function LoginPage() {
     >
       <div className="card" style={{ width: "100%", maxWidth: "24rem" }}>
         <h1 style={{ marginTop: 0, fontSize: "1.3rem" }}>Sign in</h1>
+        {deleted && (
+          <p style={{ color: "var(--good)" }}>
+            Your account and all its data have been deleted.
+          </p>
+        )}
         {sent ? (
           <p style={{ color: "var(--text-dim)", lineHeight: 1.6 }}>
             Check your email — we&apos;ve sent you a sign-in link. You can close
