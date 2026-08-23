@@ -11,6 +11,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <div className="links">
           <Link href="/dashboard/add">+ Add</Link>
           <Link href="/dashboard/import">Import</Link>
+          <Link href="/dashboard/bulk">Bulk</Link>
           <Link href="/dashboard/settings">Settings</Link>
         </div>
       </nav>

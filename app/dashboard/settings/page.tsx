@@ -2,15 +2,23 @@ import { headers } from "next/headers";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { originFromHeaders } from "@/lib/origin";
 import { PushToggle } from "@/components/PushToggle";
+import { DeleteAccount } from "@/components/DeleteAccount";
 import {
   savePushSubscription,
   removePushSubscription,
   hasPushSubscription,
+  changeEmail,
+  deleteAccount,
 } from "../actions";
 
 export const dynamic = "force-dynamic";
 
-export default async function SettingsPage() {
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ email_sent?: string; email_error?: string }>;
+}) {
+  const params = await searchParams;
   const supabase = await createSupabaseServerClient();
   const {
     data: { user },
@@ -63,9 +71,44 @@ export default async function SettingsPage() {
       <div className="card" style={{ marginBottom: "1rem" }}>
         <h2 style={{ marginTop: 0, fontSize: "1rem" }}>Account</h2>
         <p className="muted">Signed in as {user?.email}</p>
-        <form action="/auth/signout" method="post">
+
+        <form
+          action={changeEmail}
+          style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.75rem" }}
+        >
+          <input
+            type="email"
+            name="email"
+            required
+            placeholder="new@email.com"
+            style={{ maxWidth: "16rem" }}
+          />
+          <button className="btn-small">Change email</button>
+        </form>
+        {params.email_sent && (
+          <p className="muted">
+            Confirmation links sent — check both your old and new inbox to
+            finish the change.
+          </p>
+        )}
+        {params.email_error && (
+          <p style={{ color: "var(--danger)" }}>
+            Couldn&apos;t start the email change — check the address and try
+            again.
+          </p>
+        )}
+
+        <p className="muted" style={{ marginBottom: "0.75rem" }}>
+          Export everything you&apos;ve entered:{" "}
+          <a href="/api/export">JSON</a> ·{" "}
+          <a href="/api/export?format=csv">CSV</a>
+        </p>
+
+        <form action="/auth/signout" method="post" style={{ marginBottom: "1rem" }}>
           <button className="btn-small">Sign out</button>
         </form>
+
+        <DeleteAccount action={deleteAccount} />
       </div>
     </main>
   );
