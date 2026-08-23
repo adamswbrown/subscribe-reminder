@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { todayISO } from "@/lib/money";
 import { findService } from "@/lib/catalog";
-import type { ImportSuggestion } from "@/lib/importTypes";
+import { CYCLE_DAYS, type ImportSuggestion } from "@/lib/importTypes";
 
 function str(form: FormData, key: string): string | null {
   const v = form.get(key);
@@ -119,13 +119,6 @@ export async function reactivate(id: string) {
   revalidatePath("/dashboard");
 }
 
-const CYCLE_DAYS: Record<string, number> = {
-  weekly: 7,
-  monthly: 30,
-  quarterly: 91,
-  yearly: 365,
-};
-
 export async function addSubscriptionsBulk(suggestions: ImportSuggestion[]) {
   const supabase = await createSupabaseServerClient();
   const {
@@ -141,7 +134,9 @@ export async function addSubscriptionsBulk(suggestions: ImportSuggestion[]) {
     if (!nextRenewal && s.last_charged) {
       const last = Date.parse(s.last_charged + "T00:00:00Z");
       if (Number.isFinite(last)) {
-        nextRenewal = new Date(last + (CYCLE_DAYS[cycle] ?? 30) * 86400000)
+        const days =
+          CYCLE_DAYS[cycle as keyof typeof CYCLE_DAYS] ?? CYCLE_DAYS.monthly;
+        nextRenewal = new Date(last + days * 86400000)
           .toISOString()
           .slice(0, 10);
       }
@@ -172,7 +167,16 @@ export async function addSubscriptionsBulk(suggestions: ImportSuggestion[]) {
   const { error } = await supabase.from("subscriptions").insert(rows);
   if (error) throw new Error(error.message);
   revalidatePath("/dashboard");
-  redirect("/dashboard");
+}
+
+export async function hasPushSubscription(endpoint: string): Promise<boolean> {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase
+    .from("push_subscriptions")
+    .select("endpoint")
+    .eq("endpoint", endpoint)
+    .maybeSingle();
+  return data !== null;
 }
 
 export async function snoozeReminders(id: string, days: number) {

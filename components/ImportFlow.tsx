@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { detectRecurring, parseCsv } from "@/lib/importDetect";
 import { extractFromText } from "@/lib/ocrExtract";
 import type { ImportSuggestion } from "@/lib/importTypes";
@@ -12,6 +13,7 @@ export function ImportFlow({
 }: {
   addBulk: (rows: ImportSuggestion[]) => Promise<void>;
 }) {
+  const router = useRouter();
   const [suggestions, setSuggestions] = useState<ImportSuggestion[] | null>(null);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [busy, setBusy] = useState(false);
@@ -22,12 +24,44 @@ export function ImportFlow({
 
   function showSuggestions(list: ImportSuggestion[]) {
     setSuggestions(list);
-    setSelected(new Set(list.map((_, i) => i)));
+    // Pre-tick everything that looks live; expired entries stay unticked.
+    setSelected(
+      new Set(
+        list
+          .map((s, i) => (s.next_renewal_date || s.price != null ? i : -1))
+          .filter((i) => i >= 0)
+      )
+    );
     setError(
       list.length === 0
         ? "Nothing recognisable found — try a clearer screenshot or a different file."
         : null
     );
+  }
+
+  // Safari decodes HEIC natively; route it through a canvas to get a PNG
+  // tesseract can read. (Chrome/Firefox can't decode HEIC at all.)
+  async function decodeToPng(file: File): Promise<Blob> {
+    const url = URL.createObjectURL(file);
+    try {
+      const img = new Image();
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => resolve();
+        img.onerror = () => reject(new Error("decode failed"));
+        img.src = url;
+      });
+      const canvas = document.createElement("canvas");
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      canvas.getContext("2d")!.drawImage(img, 0, 0);
+      const blob = await new Promise<Blob | null>((r) =>
+        canvas.toBlob(r, "image/png")
+      );
+      if (!blob) throw new Error("decode failed");
+      return blob;
+    } finally {
+      URL.revokeObjectURL(url);
+    }
   }
 
   async function handleScreenshots(files: FileList) {
@@ -36,29 +70,48 @@ export function ImportFlow({
     setProgress("Loading OCR engine…");
     try {
       // OCR runs entirely in the browser (WASM) — screenshots never upload.
+      // All engine assets are served from our own origin: third-party CDNs
+      // get blocked by content blockers and filtered networks.
       const { createWorker } = await import("tesseract.js");
-      const worker = await createWorker("eng");
+      const worker = await createWorker("eng", 1, {
+        workerPath: "/tesseract/worker.min.js",
+        corePath: "/tesseract",
+        langPath: "/tesseract/lang",
+      });
       try {
         const all: ImportSuggestion[] = [];
         const list = [...files].slice(0, 6);
         for (let i = 0; i < list.length; i++) {
           setProgress(`Reading image ${i + 1} of ${list.length}…`);
-          const { data } = await worker.recognize(list[i]);
+          const file = list[i];
+          const isHeic =
+            /heic|heif/i.test(file.type) || /\.hei[cf]$/i.test(file.name);
+          const input = isHeic
+            ? await decodeToPng(file).catch(() => {
+                throw new Error(
+                  `${file.name} is HEIC and this browser can't decode it — open the site in Safari, or convert it to JPEG`
+                );
+              })
+            : file;
+          const { data } = await worker.recognize(input);
           all.push(...extractFromText(data.text));
         }
-        // Dedupe across images by catalog id / name
+        // Dedupe across images by service + price (same service at two
+        // prices = two real subscriptions, e.g. two NOW memberships)
         const seen = new Map<string, ImportSuggestion>();
         for (const s of all) {
-          const key = s.catalog_id ?? s.name.toLowerCase();
+          const key = `${s.catalog_id ?? s.name.toLowerCase()}|${s.price ?? ""}`;
           if (!seen.has(key)) seen.set(key, s);
         }
         showSuggestions([...seen.values()]);
       } finally {
         await worker.terminate();
       }
-    } catch {
+    } catch (err) {
+      const detail =
+        err instanceof Error ? err.message : typeof err === "string" ? err : "";
       setError(
-        "Couldn't read those images — try sharper screenshots (crop to the list if you can)."
+        `Couldn't read those images${detail ? ` (${detail})` : ""} — try sharper screenshots, cropped to the list.`
       );
     } finally {
       setBusy(false);
@@ -86,7 +139,9 @@ export function ImportFlow({
     setBusy(true);
     try {
       await addBulk(rows);
-    } finally {
+      router.push("/dashboard");
+    } catch {
+      setError("Couldn't save those subscriptions — try again.");
       setBusy(false);
     }
   }

@@ -84,16 +84,19 @@ async function sendEmail(to: string, subj: string, text: string) {
   return true;
 }
 
+// Returns the reminder ids that reached at least one push endpoint.
 async function sendPushes(
   supabase: SupabaseClient,
   secret: string,
   due: DueReminder[]
-) {
+): Promise<Set<number>> {
+  const delivered = new Set<number>();
   const pub = process.env.VAPID_PUBLIC_KEY;
   const priv = process.env.VAPID_PRIVATE_KEY;
-  if (!pub || !priv || due.length === 0) return;
+  if (!pub || !priv || due.length === 0) return delivered;
+  // VAPID subject is the operator contact; default to our own origin.
   webpush.setVapidDetails(
-    process.env.VAPID_SUBJECT ?? "mailto:reminders@gcgyms.com",
+    process.env.VAPID_SUBJECT ?? appUrl().replace(/\/dashboard$/, ""),
     pub,
     priv
   );
@@ -105,10 +108,10 @@ async function sendPushes(
   });
   if (error) {
     console.error("[scheduler] get_push_subscriptions failed:", error.message);
-    return;
+    return delivered;
   }
   const targets = (data ?? []) as PushTarget[];
-  if (targets.length === 0) return;
+  if (targets.length === 0) return delivered;
 
   const byUser = new Map<string, PushTarget[]>();
   for (const t of targets) {
@@ -129,6 +132,7 @@ async function sendPushes(
           JSON.stringify({ title: subject(r), url: appUrl() })
         );
         sent++;
+        delivered.add(r.id);
       } catch (err) {
         const status = (err as { statusCode?: number }).statusCode;
         if (status === 404 || status === 410) {
@@ -149,6 +153,7 @@ async function sendPushes(
     }
   }
   if (sent > 0) console.log(`[scheduler] sent ${sent} push notification(s)`);
+  return delivered;
 }
 
 async function tick() {
@@ -179,11 +184,16 @@ async function tick() {
     }
 
     const due = (data ?? []) as DueReminder[];
-    await sendPushes(supabase, secret, due);
+    const pushed = await sendPushes(supabase, secret, due);
+    // A reminder is done once ANY channel delivered it — otherwise a
+    // missing/failing email sender makes pushes repeat every tick. With no
+    // channel configured at all, log once and mark done rather than loop.
+    const noChannel =
+      !process.env.RESEND_API_KEY && !process.env.VAPID_PRIVATE_KEY;
     const sentIds: number[] = [];
     for (const r of due) {
-      const ok = await sendEmail(r.email, subject(r), body(r));
-      if (ok) sentIds.push(r.id);
+      const emailOk = await sendEmail(r.email, subject(r), body(r));
+      if (emailOk || pushed.has(r.id) || noChannel) sentIds.push(r.id);
     }
     if (sentIds.length > 0) {
       const { error: markErr } = await supabase.rpc("mark_reminders_sent", {

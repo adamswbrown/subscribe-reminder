@@ -9,6 +9,7 @@ import {
 } from "@/lib/money";
 import { categoryLabel } from "@/lib/catalog";
 import { SubRow } from "@/components/SubRow";
+import { SubGroup, groupSubs } from "@/components/SubGroup";
 
 export const dynamic = "force-dynamic";
 
@@ -103,8 +104,8 @@ export default async function Dashboard() {
         <>
           <h2 className="section">Needs a decision</h2>
           <div className="sub-list">
-            {needsAction.map((s) => (
-              <SubRow key={s.id} sub={s} />
+            {groupSubs(needsAction).map((group) => (
+              <SubGroup key={group[0].id} subs={group} />
             ))}
           </div>
         </>
@@ -114,8 +115,8 @@ export default async function Dashboard() {
         <>
           <h2 className="section">Keeping</h2>
           <div className="sub-list">
-            {keeping.map((s) => (
-              <SubRow key={s.id} sub={s} />
+            {groupSubs(keeping).map((group) => (
+              <SubGroup key={group[0].id} subs={group} />
             ))}
           </div>
         </>

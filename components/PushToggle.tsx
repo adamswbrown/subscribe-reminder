@@ -7,12 +7,14 @@ type State = "unsupported" | "off" | "on" | "busy" | "denied" | "unavailable";
 export function PushToggle({
   save,
   remove,
+  isMine,
 }: {
   save: (sub: {
     endpoint: string;
     keys: { p256dh: string; auth: string };
   }) => Promise<void>;
   remove: (endpoint: string) => Promise<void>;
+  isMine: (endpoint: string) => Promise<boolean>;
 }) {
   const [state, setState] = useState<State>("busy");
 
@@ -32,8 +34,11 @@ export function PushToggle({
       }
       const reg = await navigator.serviceWorker.getRegistration();
       const sub = await reg?.pushManager.getSubscription();
-      setState(sub ? "on" : "off");
+      // "On" only if this browser's subscription belongs to the signed-in
+      // user — a previous account's subscription must read as off.
+      setState(sub && (await isMine(sub.endpoint)) ? "on" : "off");
     })().catch(() => setState("unsupported"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function enable() {
@@ -47,6 +52,12 @@ export function PushToggle({
       const { key } = await res.json();
       const reg = await navigator.serviceWorker.register("/sw.js");
       await navigator.serviceWorker.ready;
+      // If the browser holds another account's subscription, drop it so we
+      // get a fresh endpoint owned by the current user.
+      const existing = await reg.pushManager.getSubscription();
+      if (existing && !(await isMine(existing.endpoint))) {
+        await existing.unsubscribe();
+      }
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: key,

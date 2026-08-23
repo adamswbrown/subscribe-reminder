@@ -16,6 +16,9 @@ const MONTHS: Record<string, number> = {
 const STOPWORDS =
   /^(active|inactive|expired|subscriptions?|settings|manage|edit|done|renews?|expires?|next|payment|billing|due|amount|date|direct debits?|standing orders?|automatic payments?|memberships?( & subscriptions)?|history|see all|cancel(led)?|total)$/i;
 
+// Section headers and UI chrome that OCR merges with neighbours
+const HEADER_JUNK = /^(active|inactive|expired)\b|\bsort\b/i;
+
 // Plan-tier descriptors are details of the entry above, not services.
 const PLAN_DESCRIPTOR =
   /^(standard|premium|basic|individual|family|duo|student|essential|ultimate|extra|plus|pro|lite)(\s+(plan|tier|with ads))?$|\b(plan|tier)$/i;
@@ -74,6 +77,7 @@ function parseCycle(s: string): ImportSuggestion["cycle"] {
 function looksLikeName(line: string): boolean {
   if (line.length < 3 || line.length > 42) return false;
   if (STOPWORDS.test(line.trim())) return false;
+  if (HEADER_JUNK.test(line.trim())) return false;
   if (PLAN_DESCRIPTOR.test(line.trim())) return false;
   if (parsePrice(line) !== null) return false;
   if (parseFuzzyDate(line)) return false;
@@ -81,27 +85,44 @@ function looksLikeName(line: string): boolean {
   return letters / line.length > 0.6;
 }
 
+function firstWordKey(name: string): string | null {
+  const w = name.replace(/[^A-Za-z0-9 ]/g, " ").trim().split(/\s+/)[0] ?? "";
+  return w.length >= 4 ? w.toLowerCase() : null;
+}
+
+const PLAN_HINT = /membership|premium|pro\b|plan|yearly|monthly|annual|\(/i;
+
 export function extractFromText(text: string): ImportSuggestion[] {
   const lines = text
     .split(/\n+/)
     .map((l) => l.replace(/\s+/g, " ").trim())
     .filter((l) => l.length > 0);
 
-  const out = new Map<string, ImportSuggestion>();
+  // Catalog-matched lines mark entry boundaries: a detail window must never
+  // reach into the next service's rows (that's how Athlytic once inherited
+  // iCloud's price).
+  const catalogAt = lines.map((l) => matchCatalog(l));
 
+  const results: ImportSuggestion[] = [];
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const catalogId = matchCatalog(line);
+    const catalogId = catalogAt[i];
     let name: string | null = null;
     if (catalogId) {
       name = findService(catalogId)?.name ?? line;
     } else if (looksLikeName(line)) {
-      name = line.replace(/[|•·>›]/g, "").trim();
+      name = line.replace(/[|•·>›]/g, "").replace(/^[^A-Za-z0-9]+/, "").trim();
     }
     if (!name) continue;
 
-    // Details usually sit on the same line or the few below it.
-    const window = [line, lines[i + 1] ?? "", lines[i + 2] ?? "", lines[i + 3] ?? ""].join("  ");
+    let end = Math.min(i + 3, lines.length - 1);
+    for (let j = i + 1; j <= end; j++) {
+      if (catalogAt[j]) {
+        end = j - 1;
+        break;
+      }
+    }
+    const window = lines.slice(i, end + 1).join("  ");
     const price = parsePrice(window);
     const date = parseFuzzyDate(window);
     const cycle = parseCycle(window);
@@ -110,20 +131,45 @@ export function extractFromText(text: string): ImportSuggestion[] {
     if (!catalogId && price === null && !date) continue;
 
     const isPast = date !== null && date < todayISO();
-    const key = (catalogId ?? name.toLowerCase()).trim();
-    const existing = out.get(key);
-    const suggestion: ImportSuggestion = {
+    results.push({
       name,
       catalog_id: catalogId,
       plan_label: null,
-      price: price ?? existing?.price ?? null,
-      cycle: cycle ?? existing?.cycle ?? null,
-      next_renewal_date: !isPast ? (date ?? existing?.next_renewal_date ?? null) : (existing?.next_renewal_date ?? null),
-      last_charged: isPast ? date : (existing?.last_charged ?? null),
+      price,
+      cycle,
+      next_renewal_date: !isPast ? date : null,
+      last_charged: isPast ? date : null,
       category: catalogId ? (findService(catalogId)?.category ?? null) : null,
-    };
-    out.set(key, suggestion);
+    });
   }
 
-  return [...out.values()];
+  // Merge plan/detail lines into their service: consecutive suggestions
+  // sharing a first word ("Athlytic…" + "Athlytic Pro (Yearly)") are one
+  // subscription — keep the first, fill gaps, use the detail as plan label.
+  const merged: ImportSuggestion[] = [];
+  const byKey = new Map<string, ImportSuggestion>();
+  for (const s of results) {
+    const key =
+      s.catalog_id ?? firstWordKey(s.name) ?? `full:${s.name.toLowerCase()}`;
+    const existing = byKey.get(key);
+    // Two rows for the same service with different prices are genuinely
+    // separate subscriptions (e.g. two NOW memberships) — keep both.
+    if (existing && existing.price != null && s.price != null && existing.price !== s.price) {
+      merged.push(s);
+      continue;
+    }
+    if (existing) {
+      existing.price = existing.price ?? s.price;
+      existing.cycle = existing.cycle ?? s.cycle;
+      existing.next_renewal_date = existing.next_renewal_date ?? s.next_renewal_date;
+      existing.last_charged = existing.last_charged ?? s.last_charged;
+      if (!existing.plan_label && PLAN_HINT.test(s.name)) {
+        existing.plan_label = s.name;
+      }
+      continue;
+    }
+    byKey.set(key, s);
+    merged.push(s);
+  }
+  return merged;
 }
